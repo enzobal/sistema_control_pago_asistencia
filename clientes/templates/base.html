@@ -1,0 +1,189 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+    <title>{% block title %}Gimnasio{% endblock %}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #333;
+            padding: 5px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .menu-container {
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+        .profile-img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 10px;
+        }
+        .welcome-text {
+            color: white;
+            margin-right: 20px;
+            font-size: 14px;
+        }
+        nav ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-wrap: wrap;
+        }
+        nav ul li {
+            margin: 0 5px;
+        }
+        nav ul li a, nav ul li form button {
+            display: block;
+            color: white;
+            padding: 8px 12px;
+            text-decoration: none;
+            background-color: #333;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            font-size: 14px;
+        }
+        nav ul li a:hover, nav ul li form button:hover {
+            background-color: #111;
+        }
+        main {
+            padding: 20px;
+        }
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                align-items: center;
+            }
+            .menu-container {
+                flex-direction: column;
+            }
+            .welcome-text {
+                text-align: center;
+                margin-bottom: 5px;
+            }
+            nav ul {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+    <script>
+        function confirmarCierreSesion() {
+            if (confirm("¿Está seguro de que desea cerrar sesión?")) {
+                document.getElementById('logout-form').submit();
+            }
+        }
+    </script>
+</head>
+<body>
+    <header>
+        {% if user.is_authenticated %}
+            <div class="menu-container">
+                {% if user.cliente.imagen_perfil %}
+                    <img src="{{ user.cliente.imagen_perfil.url }}" alt="Imagen de perfil" class="profile-img">
+                {% else %}
+                    <img src="{% static 'default_profile.png' %}" alt="Imagen de perfil por defecto" class="profile-img">
+                {% endif %}
+                <div class="welcome-text">Bienvenido, {{ user.username }}</div>
+                <nav>
+                    <ul>
+                        {% if user.is_staff %}
+                            <li><a href="{% url 'home' %}">Inicio</a></li>
+                            <li><a href="{% url 'listar_clientes' %}">Clientes</a></li>
+                            <li><a href="{% url 'listar_asistencias' %}">Asistencias</a></li>
+                            <li><a href="{% url 'listar_pagos' %}">Pagos</a></li>
+                            <li><a href="{% url 'escanear_qr' %}">Escanear QR</a></li>
+                            <li><a href="{% url 'crear_asistencia' %}">Crear Asistencia</a></li>
+                            <li><a href="{% url 'crear_pago' %}">Crear Pago</a></li>
+                            <li><a href="{% url 'listar_inactivos' %}">inactivos</a></li>
+                            <li><a href="{% url 'recaudacion' %}">Recaudación</a></li>
+                            <li><a href="{% url 'dashboard' %}">Estadísticas</a></li>
+                        {% else %}
+                            <li><a href="{% url 'home' %}">Inicio</a></li>
+                            <li><a href="{% url 'listar_asistencias' %}">Mis Asistencias</a></li>                        
+                            <li><a href="{% url 'listar_pagos' %}">Mis Pagos</a></li>
+                            <li><a href="{% url 'perfil' %}">Mi Perfil</a></li>
+                            <li><a href="{% url 'crear_asistencia' %}">Crear Asistencia</a></li>
+                            <li><a href="{% url 'editar_perfil' %}">Editar Perfil</a></li>
+                        {% endif %}
+                        <li>
+                            <form id="logout-form" method="post" action="{% url 'logout' %}" style="margin: 0;">
+                                {% csrf_token %}
+                                <button type="button" onclick="confirmarCierreSesion()">Cerrar Sesión</button>
+                            </form>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        {% endif %}
+    </header>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    {% if cliente %}
+    <div class="qr-float-container">
+        <a href="{% url 'generar_qr' cliente.id %}" class="qr-float-btn">
+            <img src="https://cdn-icons-png.flaticon.com/512/3917/3917132.png" alt="QR">
+            <span class="qr-text">Click aquí para generar tu QR para asistencia</span>
+        </a>
+    </div>
+    {% endif %}
+
+<style>
+/* Contenedor general */
+.qr-float-container {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #007bff;
+    padding: 10px 14px;
+    border-radius: 25px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s, background 0.3s;
+    cursor: pointer;
+}
+
+/* Efecto hover */
+.qr-float-container:hover {
+    transform: scale(1.1);
+    background: #0056b3;
+}
+
+/* Imagen del QR */
+.qr-float-btn img {
+    width: 40px;
+    height: 40px;
+}
+
+/* Texto del botón */
+.qr-text {
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+    white-space: nowrap;
+}
+</style>
+
+
+</body>
+</html>

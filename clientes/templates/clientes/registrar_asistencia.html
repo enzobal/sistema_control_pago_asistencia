@@ -1,0 +1,6 @@
+<form method="POST">
+    {% csrf_token %}
+    <label for="qr_data">Escanear QR:</label>
+    <input type="text" id="qr_data" name="qr_data" placeholder="Escanee el código QR" required>
+    <button type="submit">Registrar</button>
+</form>

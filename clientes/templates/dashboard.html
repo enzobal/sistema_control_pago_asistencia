@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center mb-4">📊 Dashboard de Estadísticas</h2>
+
+    <!-- Tarjetas Resumen -->
+    <div class="row text-center">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white shadow p-3">
+                <h5>Total de Clientes</h5>
+                <h2>{{ total_clientes }}</h2>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white shadow p-3">
+                <h5>Presentes Hoy</h5>
+                <h2>{{ presentes_hoy }}</h2>
+                <p>{{ porcentaje_presentes }}% de asistencia</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-warning text-dark shadow p-3">
+                <h5>Total Recaudado</h5>
+                <h2>${{ total_recaudado }}</h2>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráficos -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <h5 class="text-center">📌 Asistencia de Hoy</h5>
+            <canvas id="graficoAsistencia" width="300" height="300"></canvas>
+        </div>
+        <div class="col-md-6">
+            <h5 class="text-center">💰 Dinero Recaudado</h5>
+            <canvas id="graficoRecaudacion" width="300" height="300"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    var ctx1 = document.getElementById('graficoAsistencia').getContext('2d');
+    var ctx2 = document.getElementById('graficoRecaudacion').getContext('2d');
+
+    // Gráfico de asistencia
+    new Chart(ctx1, {
+        type: 'doughnut',
+        data: {
+            labels: ['Presentes', 'Ausentes'],
+            datasets: [{
+                data: [{{ presentes_hoy }}, {{ ausentes_hoy }}],
+                backgroundColor: ['#28a745', '#dc3545'],
+            }]
+        },
+        options: {
+            responsive: false, 
+            maintainAspectRatio: false
+        }
+    });
+
+    // Gráfico de dinero recaudado (corregido)
+    new Chart(ctx2, {
+        type: 'bar',
+        data: {
+            labels: ['Total Recaudado'],
+            datasets: [{
+                data: [{{ total_recaudado }}],
+                backgroundColor: ['#007bff'],
+            }]
+        },
+        options: {
+            responsive: false, 
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: Math.max(1000, {{ total_recaudado }} * 1.2) // Límite del eje y ajustado
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

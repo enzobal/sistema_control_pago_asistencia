@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Lista de Pagos{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="text-center">
+        <h2>Lista de Pagos</h2>
+    </div>
+
+    <form method="GET" action="{% url 'listar_pagos' %}" class="form-inline my-4">
+        <input type="text" name="q" class="form-control mr-sm-2" placeholder="Buscar por nombre o fecha" value="{{ request.GET.q }}">
+        <button type="submit" class="btn btn-primary">Buscar</button>
+    </form>
+
+    {% regroup pagos by fecha_pago|date:"F Y" as pagos_por_mes %}
+
+    {% for mes_pagos in pagos_por_mes %}
+    <div class="card mb-4">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">{{ mes_pagos.grouper }}</h5> <!-- Nombre del mes y año -->
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Apellido</th>
+                            <th>Importe</th>
+                            <th>Fecha de Pago</th>
+                            <th>Fecha de Inicio</th>
+                            <th>Fecha de Fin</th>
+                            {% if user.is_staff %} 
+                                <th>Acciones</th>  <!-- Nueva columna para agrupar botones -->
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pago in mes_pagos.list %}
+                            <tr>
+                                <td>{{ pago.cliente.nombre }}</td>
+                                <td>{{ pago.cliente.apellido }}</td>
+                                <td>${{ pago.importe|floatformat:2|intcomma }}</td>
+                                <td>{{ pago.fecha_pago|date:"d M Y" }}</td>
+                                <td>{{ pago.fecha_inicio }}</td>
+                                <td>{{ pago.fecha_fin }}</td>
+                                {% if user.is_staff %}  
+                                    <td>
+                                        <a href="{% url 'editar_pago' pago.id %}" class="btn btn-warning btn-sm">Editar</a>
+                                        <form action="{% url 'eliminar_pago' pago.id %}" method="POST" style="display:inline;" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este pago?');">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                                        </form>
+                                    </td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+
+
+    {% if user.is_staff %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Agregar Nota</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <textarea name="contenido" class="form-control" rows="4" placeholder="Escribe una nota..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-success">Guardar Nota</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5>Notas</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group">
+                    {% for nota in notas %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>{{ nota.contenido }}</span>
+                            <form method="POST" style="display:inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="nota_id" value="{{ nota.id }}">
+                                <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                            </form>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function eliminarNota(notaId) {
+    fetch(`/eliminar_nota/${notaId}/`, { method: 'DELETE' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            }
+        });
+}
+</script>
+
+{% endblock %}

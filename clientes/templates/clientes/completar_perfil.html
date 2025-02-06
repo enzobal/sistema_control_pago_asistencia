@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+<title>FullGym</title>
+{% block title %}completar perfil{% endblock %}
+
+
+
+
+{% block content %}
+<h2>Completar Perfil</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Guardar</button>
+</form>
+
+
+{% endblock %}

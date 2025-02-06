@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Usuario - FullGym</title>
+    <style>
+        body {
+            background: url('/static/images/full_sala.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: white;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 10px;
+        }
+        .container {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 400px;
+            width: 100%;
+            text-align: left;
+            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.3);
+            box-sizing: border-box; /* Asegura que el padding no afecte el ancho total */
+        }
+        h2 {
+            color: #f39c12;
+            text-align: center;
+            margin-bottom: 20px; /* Espacio adicional debajo del título */
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px; /* Espacio entre los campos del formulario */
+        }
+        label {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 5px;
+            border: none;
+            font-size: 16px;
+            box-sizing: border-box; /* Asegura que el padding no afecte el ancho total */
+        }
+        button {
+            background: #f39c12;
+            border: none;
+            padding: 12px;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 15px;
+            text-transform: uppercase;
+            font-weight: bold;
+            width: 100%; /* Asegura que el botón ocupe todo el ancho */
+        }
+        button:hover {
+            background: #e67e22;
+        }
+        .motivational {
+            text-align: center;
+            font-size: 18px;
+            margin-top: 20px;
+            color: rgb(252, 202, 4);
+        }
+        /* Ajustes para pantallas pequeñas */
+        @media screen and (max-width: 480px) {
+            .container {
+                padding: 15px;
+                max-width: 90%;
+            }
+            h2 {
+                font-size: 22px;
+            }
+            .motivational {
+                font-size: 16px;
+            }
+            button {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Registro de Usuario</h2>
+        <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+                <div>
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <div style="color: red; font-size: 14px; margin-top: 5px;">
+                            {{ field.errors|striptags }}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            <button type="submit">Registrarse</button>
+        </form>
+        <div class="motivational">
+            "El dolor es temporal, la gloria es para siempre."
+            FullGym
+        </div>
+    </div>
+</body>
+</html>

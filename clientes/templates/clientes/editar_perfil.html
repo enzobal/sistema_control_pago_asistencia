@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Editar Perfil - FullGym{% endblock %}
+
+{% block content %}
+<div class="editar-perfil-container">
+    <h2>Editar Perfil</h2>
+    
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            {{ form.as_p }}
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit">Guardar</button>
+        </div>
+    </form>
+</div>
+
+<style>
+/* Establecer imagen de fondo */
+body {
+    background: url("/static/images/foto2.jpg") no-repeat center center fixed;
+    background-size: cover;
+    font-family: "Arial", sans-serif;
+    color: white;
+}
+
+/* Contenedor principal */
+.editar-perfil-container {
+    max-width: 500px;
+    margin: 50px auto;
+    padding: 30px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Título */
+.editar-perfil-container h2 {
+    color: #ffcc00; /* Amarillo */
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+/* Estilos del formulario */
+.form-group {
+    text-align: left;
+}
+
+/* Campos del formulario */
+.editar-perfil-container input,
+.editar-perfil-container select,
+.editar-perfil-container textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 8px;
+    border: 1px solid #ff9900; /* Naranja */
+    border-radius: 5px;
+    font-size: 14px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+/* Botón */
+.form-actions {
+    margin-top: 20px;
+}
+
+.form-actions button {
+    background: #ff9900; /* Naranja */
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s ease-in-out;
+}
+
+.form-actions button:hover {
+    background: #cc7700; /* Naranja oscuro */
+    transform: scale(1.05);
+}
+
+/* Animación de entrada */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>
+
+
+{% endblock %}

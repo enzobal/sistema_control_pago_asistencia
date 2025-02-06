@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Escanear QR - Registrar Asistencia{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Escanear QR para Registrar Asistencia</h2>
+    <p>Usa la cámara de tu celular o PC para escanear el código QR del cliente.</p>
+    
+    <!-- Área de escaneo -->
+    <div id="qr-reader" style="width: 100%; max-width: 400px; border: 1px solid #ccc;"></div>
+    
+    <!-- Mostrar datos escaneados -->
+    <div class="mt-3">
+        <h5>Datos escaneados:</h5>
+        <p id="scanned-data" class="alert alert-info">Esperando escaneo...</p>
+    </div>
+
+    <input type="hidden" id="csrf_token" value="{{ csrf_token }}">
+    <div id="result" class="mt-3"></div>
+</div>
+
+<!-- Cargar la librería de escaneo -->
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script>
+    // Función que se ejecuta al escanear un QR con éxito
+    function onScanSuccess(qrCodeMessage) {
+        let scannedDataDiv = document.getElementById("scanned-data");
+        scannedDataDiv.textContent = `Datos escaneados: ${qrCodeMessage}`;  // Mostrar datos escaneados en pantalla
+    
+        // Dividir los datos del QR en líneas
+        let lines = qrCodeMessage.split("\n");
+
+        // Buscar la línea que contiene el ID
+        let idLine = lines.find(line => line.startsWith("ID:"));
+
+        // Si se encuentra, extraer el ID correctamente
+        if (idLine) {
+            let clienteID = idLine.replace("ID:", "").trim();
+
+            fetch("{% url 'registrar_asistencia_qr' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": document.getElementById("csrf_token").value,
+                },
+                body: JSON.stringify({ cliente_id: clienteID }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                let resultDiv = document.getElementById("result");
+                if (data.success) {
+                    resultDiv.innerHTML = `<div class="alert alert-success">${data.success}</div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+            });
+        } else {
+            console.error("Formato de ID inválido");
+            scannedDataDiv.textContent = "Error: Formato de ID inválido";
+        }
+    }
+
+    // Configuración del escáner de QR
+    function startScanner() {
+        let html5QrCode = new Html5QrcodeScanner(
+            "qr-reader",
+            {
+                fps: 10,  // Velocidad de escaneo (frames por segundo)
+                qrbox: { width: 250, height: 250 },  // Tamaño del área de escaneo
+            }
+        );
+
+        html5QrCode.render(onScanSuccess);
+    }
+
+    // Iniciar el escáner cuando la página cargue
+    window.onload = startScanner;
+</script>
+
+{% endblock %}

@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Mi Perfil - FullGym{% endblock %}
+
+{% block content %}
+<div class="perfil-container">
+    <h2>Mi Perfil</h2>
+    
+    <div class="imagen-perfil">
+        {% if cliente.imagen_perfil %}
+            <img src="{{ cliente.imagen_perfil.url }}" alt="Imagen de perfil">
+        {% else %}
+            <p>No has subido una imagen de perfil.</p>
+        {% endif %}
+    </div>
+    
+    <div class="info-perfil">
+        <p><strong>Nombre:</strong> {{ cliente.nombre }}</p>
+        <p><strong>Apellido:</strong> {{ cliente.apellido }}</p>
+        <p><strong>Correo:</strong> {{ cliente.email }}</p>
+        <p><strong>Número de Celular:</strong> {{ cliente.numero_celular }}</p>
+        <p><strong>Edad:</strong> {{ cliente.edad }}</p>
+        <p><strong>Fecha de Nacimiento:</strong> {{ cliente.fecha_nacimiento }}</p>
+        <p><strong>Enfermedades:</strong> {{ cliente.enfermedades|default:"No especificado" }}</p>
+        <p><strong>Alergias:</strong> {{ cliente.alergias|default:"No especificado" }}</p>
+    </div>
+
+    <div class="boton-editar">
+        <a href="{% url 'editar_perfil' %}">Editar Perfil</a>
+    </div>
+</div>
+
+<style>
+/* Imagen de fondo */
+body {
+    background: url("/static/images/foto3.jpg") no-repeat center center fixed;
+    background-size: cover;
+    font-family: "Arial", sans-serif;
+    color: white;
+}
+
+/* Contenedor principal */
+.perfil-container {
+    max-width: 500px;
+    margin: 50px auto;
+    padding: 30px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Título */
+.perfil-container h2 {
+    color: #ffcc00; /* Amarillo */
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+/* Imagen de perfil */
+.imagen-perfil img {
+    max-width: 150px;
+    border-radius: 50%;
+    border: 3px solid #ff9900; /* Naranja */
+}
+
+/* Información del perfil */
+.info-perfil p {
+    color: white;
+    font-size: 16px;
+    margin: 5px 0;
+}
+
+/* Botón de editar */
+.boton-editar {
+    margin-top: 20px;
+}
+
+.boton-editar a {
+    background: #ff9900; /* Naranja */
+    color: white;
+    padding: 12px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 16px;
+    transition: 0.3s ease-in-out;
+}
+
+.boton-editar a:hover {
+    background: #cc7700; /* Naranja oscuro */
+    transform: scale(1.05);
+}
+
+/* Animación de entrada */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>
+{% endblock %}

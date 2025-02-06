@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Pago | FullGym</title>
+    <style>
+        /* Estilos generales */
+        body {
+            background: url('/static/images/full_sala.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: white;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            max-width: 500px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            text-align: left;
+        }
+        h2 {
+            color: #f39c12;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* Estilos para la info del pago */
+        .info-pago {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .info-pago p {
+            margin: 5px 0;
+            font-size: 16px;
+        }
+
+        /* Estilos del formulario */
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 5px;
+            border: none;
+        }
+
+        /* Botones */
+        button {
+            background: #f39c12;
+            border: none;
+            padding: 12px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 15px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #e67e22;
+        }
+        .cancelar {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            color: white;
+            font-size: 16px;
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .cancelar:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 600px) {
+            .container {
+                width: 95%;
+                padding: 15px;
+            }
+            h2 {
+                font-size: 22px;
+            }
+            .info-pago p {
+                font-size: 14px;
+            }
+            button, .cancelar {
+                font-size: 14px;
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Editar Pago</h2>
+
+    <div class="info-pago">
+        <p><strong>Cliente:</strong> {{ pago.cliente }}</p>
+        <p><strong>Desde (inicio):</strong> {{ pago.fecha_inicio }}</p>
+        <p><strong>Hasta (fin):</strong> {{ pago.fecha_fin }}</p>
+        <p><strong>Fecha de Pago Actual:</strong> {{ pago.fecha_pago }}</p>
+        <p><strong>Monto Pagado:</strong> ${{ pago.importe }}</p>
+        <p><strong>Estado:</strong> {{ pago.estado }}</p>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Guardar Cambios</button>
+    </form>
+    <a href="{% url 'listar_pagos' %}" class="cancelar">Cancelar</a>
+</div>
+
+</body>
+</html>

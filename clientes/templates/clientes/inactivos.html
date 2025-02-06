@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .inactive-container {
+        margin: 40px auto;
+        padding: 20px;
+        background: rgba(255, 0, 0, 0.2);
+        border-radius: 15px;
+        text-align: center;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        max-width: 900px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    th, td {
+        padding: 10px;
+        border: 1px solid #ffffff;
+        text-align: left;
+    }
+
+    th {
+        background-color: #ff0000;
+        color: white;
+    }
+
+    .btn-contact {
+        text-decoration: none;
+        padding: 8px 15px;
+        color: white;
+        background: #ff0000;
+        border-radius: 5px;
+    }
+
+    .btn-success {
+        background-color: #25D366;
+    }
+
+    .btn-primary {
+        background-color: #007BFF;
+    }
+</style>
+
+<div class="inactive-container">
+    <h1>Clientes Inactivos</h1>
+    <p>A continuación, se listan los clientes que no han pagado en 2 meses o no han asistido en 1 mes.</p>
+    
+    {% if clientes_inactivos %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Teléfono</th>
+                    <th>Email</th>
+                    <th>Motivo de Inactividad</th>
+                    <th>Contacto</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cliente in clientes_inactivos %}
+                <tr>
+                    <td>{{ cliente.nombre }} {{ cliente.apellido }}</td>
+                    <td>{{ cliente.numero_celular }}</td>
+                    <td>{{ cliente.email }}</td>
+                    <td>{{ cliente.motivo_inactividad }}</td>
+                    <td>
+                        {% if cliente.numero_celular %}
+                            <a href="https://api.whatsapp.com/send?phone={{ cliente.numero_celular }}&text=Hola%20{{ cliente.nombre }},%20te%20ofrecemos%20un%2050%25%20de%20descuento%20en%20tu%20cuota%20mensual%20para%20que%20regreses!" 
+                               target="_blank" class="btn btn-success">WhatsApp</a>
+                        {% endif %}
+                        
+                        {% if cliente.email %}
+                            <a href="mailto:{{ cliente.email }}?subject=Oferta%20Especial&body=Hola%20{{ cliente.nombre }},%20te%20ofrecemos%20un%2050%25%20de%20descuento%20en%20tu%20cuota%20mensual%20para%20que%20regreses!" 
+                               class="btn btn-primary">Email</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No hay clientes inactivos en este momento.</p>
+    {% endif %}
+</div>
+{% endblock %}

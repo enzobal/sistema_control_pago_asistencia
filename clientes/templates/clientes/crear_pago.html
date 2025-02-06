@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+<title>FullGym - Registrar Pago</title>
+{% block title %}Registrar Pago{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="page-title">Registrar Pago</h2>
+    <div class="form-container">
+        <form method="post" class="styled-form">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn-submit">Guardar</button>
+        </form>
+    </div>
+    
+
+</div>
+
+<style>
+/* Estilos generales */
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.page-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.form-container {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+}
+
+.styled-form button.btn-submit {
+    background-color: #28a745;
+    color: #fff;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 5px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.styled-form button.btn-submit:hover {
+    background-color: #218838;
+}
+
+/* Estilos para la lista de pagos */
+.section-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.payment-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 20px;
+}
+
+.payment-item {
+    background-color: #fff;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+}
+
+.payment-item .cliente,
+.payment-item .importe,
+.payment-item .fecha {
+    font-size: 16px;
+    color: #555;
+}
+
+.payment-item .importe {
+    font-weight: bold;
+    color: #007bff;
+}
+
+.payment-item .fecha {
+    font-style: italic;
+    color: #777;
+}
+
+/* Añadir márgenes para separación */
+.styled-form p {
+    font-size: 16px;
+    color: #333;
+}
+
+.styled-form input, .styled-form select, .styled-form textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    box-sizing: border-box;
+}
+
+.styled-form input:focus, .styled-form select:focus, .styled-form textarea:focus {
+    border-color: #007bff;
+    outline: none;
+}
+</style>
+
+{% endblock %}
+
