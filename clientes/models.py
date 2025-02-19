@@ -92,6 +92,7 @@ class Asistencia(models.Model):
     fecha = models.DateField()
     presente = models.BooleanField(default=False)
     asistencia_mensual = models.PositiveIntegerField(default=0)
+    
 
     def __str__(self):
         return f"{self.cliente} - {self.fecha} - {'Presente' if self.presente else 'Ausente'}"

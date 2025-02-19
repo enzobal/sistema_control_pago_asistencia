@@ -1,4 +1,4 @@
-{% load static %}
+
 {% extends "base.html" %}
 {% block title %}Registrar Asistencia{% endblock %}
 
@@ -14,17 +14,15 @@
 <script>
     function onScanSuccess(qrCodeMessage) {
         let scannedDataDiv = document.getElementById("scanned-data");
-        scannedDataDiv.textContent = "Datos escaneados: " + qrCodeMessage; // Mostrar datos en la página
+        scannedDataDiv.textContent = "Datos escaneados: " + qrCodeMessage;
 
-        // Dividir los datos del QR en líneas
         let lines = qrCodeMessage.split("\n");
-        let idLine = lines.find(line => line.startsWith("ID:")); // Buscar línea con ID
+        let idLine = lines.find(line => line.startsWith("ID:"));
 
         if (idLine) {
-            let clienteID = idLine.replace("ID:", "").trim(); // Extraer el ID numérico
-            console.log("ID extraído del QR:", clienteID); // Mostrar en consola para depuración
+            let clienteID = idLine.replace("ID:", "").trim();
+            console.log("ID extraído del QR:", clienteID);
 
-            // Enviar el ID al backend
             fetch("{% url 'registrar_asistencia_qr' %}", {
                 method: "POST",
                 headers: {
@@ -36,10 +34,24 @@
             .then(response => response.json())
             .then(data => {
                 let resultDiv = document.getElementById("result");
+                resultDiv.innerHTML = "";
+
                 if (data.success) {
-                    resultDiv.innerHTML = `<div class="alert alert-success">${data.success}</div>`;
+                    resultDiv.innerHTML += `<div class="alert alert-success">${data.success}</div>`;
                 } else {
-                    resultDiv.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+                    resultDiv.innerHTML += `<div class="alert alert-danger">${data.error}</div>`;
+                }
+
+                // Estado de la membresía
+                if (data.membresia_vencida) {
+                    resultDiv.innerHTML += `<div class="alert alert-danger">Membresía VENCIDA</div>`;
+                } else {
+                    resultDiv.innerHTML += `<div class="alert alert-success">Membresía ACTIVA</div>`;
+                }
+
+                // Notificación de inactividad
+                if (data.motivo_inactividad) {
+                    resultDiv.innerHTML += `<div class="alert alert-warning">${data.motivo_inactividad}</div>`;
                 }
             })
             .catch(error => {
@@ -50,18 +62,8 @@
             scannedDataDiv.innerHTML += "<br><span style='color:red;'>⚠️ Formato de ID inválido</span>";
         }
     }
-
-    function onScanFailure(error) {
-        console.warn("Error escaneando QR:", error);
-    }
-
-    let html5QrCode = new Html5Qrcode("qr-reader");
-    html5QrCode.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: 250 },
-        onScanSuccess,
-        onScanFailure
-    );
 </script>
+
+
 
 {% endblock %}

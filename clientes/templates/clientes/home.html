@@ -70,10 +70,11 @@
 <div class="welcome-container">
     <br><br><br><br>
     <h1>Bienvenido al Gimnasio {{ user.username }}</h1>
-    <h2>#FullGym Muscle & Fitness</h2>
-    
+    <h2>#FullGym </h2>
+
     {% if user.is_authenticated %}
-        <p>¡Es genial tenerte de vuelta, {{ user.username }}!</p>
+        <p>¡Es genial que seas parte de nosotros, {{ user.username }}!
+        POR FAVOR RECORDÁ EDITAR TU PERFIL</p>
         <br><br><br>
         {% if user.is_staff %}
             <a href="{% url 'index' %}" class="btn-main">Ir a la Portada</a>
@@ -99,9 +100,10 @@
         </nav> {% endcomment %}
     {% else %}
         <p>
-            <a href="{% url 'login' %}" class="btn-main">Iniciar Sesión</a> 
-            <a href="{% url 'registro_usuario' %}" class="btn-main">Crear Cuenta</a> 
+            <a href="{% url 'login' %}" class="btn-main">Iniciar Sesión</a>
+            <a href="{% url 'registro_usuario' %}" class="btn-main">Crear Cuenta</a>
         </p>
     {% endif %}
-</div> 
+</div>
 {% endblock %}
+

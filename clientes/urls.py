@@ -1,6 +1,8 @@
 from django.urls import path
+
 from . import views
 from django.contrib.auth import views as auth_views
+from .views import vencimientos_pagos
 
 urlpatterns = [
     path('index', views.index, name='index'),
@@ -20,7 +22,7 @@ urlpatterns = [
     path('dashboard/', views.dashboard, name='dashboard'),
     path('eliminar_asistencia/<int:asistencia_id>/', views.eliminar_asistencia, name='eliminar_asistencia'),
     path('inactivos/', views.listar_inactivos, name='listar_inactivos'),
-    
+
     path('asistencias/', views.listar_asistencias, name='listar_asistencias'),
     path('asistencias/nueva/', views.crear_asistencia, name='crear_asistencia'),
     path('asistencias/editar/<int:id>/', views.editar_asistencia, name='editar_asistencia'),
@@ -34,7 +36,9 @@ urlpatterns = [
     path('editar/<int:cliente_id>/', views.editar_cliente, name='editar_cliente'),
     path('eliminar/<int:cliente_id>/', views.eliminar_cliente, name='eliminar_cliente'),
     path("escanear_qr/", views.escanear_qr, name="escanear_qr"),
+
     path('registrar_asistencia_qr/', views.registrar_asistencia_qr, name='registrar_asistencia_qr'),
     path('generar_qr/<int:cliente_id>/', views.generar_qr, name='generar_qr'),
-
+    path('estado_cuota/<int:cliente_id>/', views.estado_cuota, name='estado_cuota'),
+    path('vencimientos/', vencimientos_pagos, name='vencimientos_pagos'),
 ]

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 <title>FullGym</title>
-{% block title %}crear asistencia{% endblock %}
+{% block title %}Crear asistencia{% endblock %}
 {% block content %}
 <style>
     body {
@@ -9,27 +9,32 @@
         color: white;
         font-family: Arial, sans-serif;
     }
+    
     .container {
         background: rgba(0, 0, 0, 0.7);
         padding: 20px;
         border-radius: 10px;
-        width: 40%;
+        width: 60%; /* En pantallas grandes, el contenedor tendrá un 60% de ancho */
         margin: auto;
         margin-top: 50px;
         text-align: left;
     }
+
     h2 {
         color: #f39c12;
         text-align: center;
     }
+
     form {
         display: flex;
         flex-direction: column;
     }
+
     label {
         font-weight: bold;
         margin-top: 10px;
     }
+
     input, select, textarea {
         width: 100%;
         padding: 8px;
@@ -37,10 +42,12 @@
         border-radius: 9px;
         border: none;
     }
+
     input[type="checkbox"] {
         width: 50px;
         height: 35px;
     }
+
     button {
         background: #f39c12;
         border: none;
@@ -51,78 +58,69 @@
         border-radius: 5px;
         margin-top: 15px;
     }
+
     button:hover {
         background: #e67e22;
     }
+
     .motivational {
         text-align: center;
         font-size: 20px;
         margin-top: 20px;
         color: #f1c40f;
     }
+
+    /* Diseño responsivo para pantallas pequeñas */
+    @media screen and (max-width: 768px) {
+        .container {
+            width: 90%; /* En pantallas pequeñas, el contenedor ocupará un 90% del ancho */
+            padding: 15px;
+        }
+
+        h2 {
+            font-size: 1.5rem; /* Tamaño de fuente ajustado para el título */
+        }
+
+        button {
+            padding: 12px 25px; /* Aumenta el tamaño del botón en pantallas pequeñas */
+            font-size: 18px;
+        }
+
+        .motivational {
+            font-size: 18px; /* Ajusta el tamaño de la cita */
+        }
+    }
+
+    /* Diseño para pantallas grandes */
+    @media screen and (min-width: 769px) {
+        .container {
+            width: 50%; /* En pantallas grandes, el contenedor ocupará un 50% del ancho */
+        }
+
+        button {
+            padding: 15px 30px; /* Botón más grande en pantallas grandes */
+            font-size: 18px;
+        }
+
+        .motivational {
+            font-size: 22px; /* Cita más grande en pantallas grandes */
+        }
+    }
 </style>
+
 <div class="container">
-    <h2>crear asistencia</h2>
+    <h2>Crear asistencia</h2>
     <form method="post">
         {% csrf_token %}
         {% for field in form %}
             <label for="{{ field.id_for_label }}">{% if field.widget_type == "checkbox" %}Marcar el cuadro para presente{% else %}{{ field.label }}{% endif %}</label>
             {{ field }}
         {% endfor %}
-        <button type="submit">confirmar presente</button>
+        <button type="submit">Confirmar presente</button>
     </form>
     <div class="motivational">
         "El dolor es temporal, la gloria es para siempre."
     </div>
 </div>
-
-
-    <div class="qr-float-container">
-        <a href="{% url 'home'  %}" class="qr-float-btn">
-            <img src="https://cdn-icons-png.flaticon.com/512/3917/3917132.png" alt="QR">
-            <span class="qr-text">Click aquí para generar tu QR para asistencia</span>
-        </a>
-    </div>
-
-
-<style>
-    /* Contenedor general (más pequeño) */
-    .qr-float-container {
-        position: fixed;
-        bottom: 20px;
-        left: 20px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        background: #007bff;
-        padding: 8px 12px; /* Ajustado */
-        border-radius: 20px;
-        box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.3);
-        transition: transform 0.2s, background 0.3s;
-        cursor: pointer;
-    }
-    
-    /* Efecto hover */
-    .qr-float-container:hover {
-        transform: scale(1.05);
-        background: #0056b3;
-    }
-    
-    /* Imagen del QR (más pequeña) */
-    .qr-float-btn img {
-        width: 30px; /* Ajustado */
-        height: 30px; /* Ajustado */
-    }
-    
-    /* Texto del botón (más pequeño) */
-    .qr-text {
-        color: white;
-        font-weight: bold;
-        font-size: 12px; /* Ajustado */
-        white-space: nowrap;
-    }
-    
-</style>
-
 
 {% endblock %}

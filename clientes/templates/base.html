@@ -114,9 +114,10 @@
                             <li><a href="{% url 'listar_inactivos' %}">inactivos</a></li>
                             <li><a href="{% url 'recaudacion' %}">Recaudación</a></li>
                             <li><a href="{% url 'dashboard' %}">Estadísticas</a></li>
+                            <li><a href="{% url 'vencimientos_pagos' %}">Vencimientos</a></li>
                         {% else %}
                             <li><a href="{% url 'home' %}">Inicio</a></li>
-                            <li><a href="{% url 'listar_asistencias' %}">Mis Asistencias</a></li>                        
+                            <li><a href="{% url 'listar_asistencias' %}">Mis Asistencias</a></li>
                             <li><a href="{% url 'listar_pagos' %}">Mis Pagos</a></li>
                             <li><a href="{% url 'perfil' %}">Mi Perfil</a></li>
                             <li><a href="{% url 'crear_asistencia' %}">Crear Asistencia</a></li>
@@ -145,6 +146,17 @@
         </a>
     </div>
     {% endif %}
+
+<footer style="background-color: #333; color: white; text-align: center; padding: 8px 0; font-size: 8px;">
+    <p>&copy; 2025 Baldani Enzo. (inicio 05/02). Creaciones:<strong>HADOKEN-PIRUE</strong>.</p>
+    <p>
+        <a href="mailto:pirueee@gmail.com" style="color: white; text-decoration: none;">
+            <img src="https://img.icons8.com/ios-filled/50/ffffff/mail.png" alt="Correo electrónico" style="vertical-align: middle; margin-right: 6px;"/>
+            pirueee@gmail.com
+        </a>
+    </p>
+</footer>
+
 
 <style>
 /* Contenedor general */

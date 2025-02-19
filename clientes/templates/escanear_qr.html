@@ -1,13 +1,21 @@
+
 {% extends "base.html" %}
+{% load static %}
+
 {% block title %}Escanear QR - Registrar Asistencia{% endblock %}
 {% block content %}
 <div class="container mt-4">
     <h2>Escanear QR para Registrar Asistencia</h2>
     <p>Usa la cámara de tu celular o PC para escanear el código QR del cliente.</p>
-    
+
     <!-- Área de escaneo -->
     <div id="qr-reader" style="width: 100%; max-width: 400px; border: 1px solid #ccc;"></div>
-    
+
+    <!-- Botón para cambiar de cámara -->
+    <button id="switch-camera-btn" class="btn btn-secondary mt-3" style="display: none;" onclick="switchCamera()">
+        Cambiar Cámara
+    </button>
+
     <!-- Mostrar datos escaneados -->
     <div class="mt-3">
         <h5>Datos escaneados:</h5>
@@ -21,20 +29,60 @@
 <!-- Cargar la librería de escaneo -->
 <script src="https://unpkg.com/html5-qrcode"></script>
 <script>
-    // Función que se ejecuta al escanear un QR con éxito
+    let scanner;
+    let currentCameraId;
+
+    function startScanner(cameraId) {
+        if (scanner) {
+            scanner.clear();
+        }
+
+        scanner = new Html5Qrcode("qr-reader");
+        
+        scanner.start(
+            cameraId,
+            {
+                fps: 10,
+                qrbox: { width: 250, height: 250 },
+            },
+            onScanSuccess
+        ).catch(err => console.error("Error iniciando escáner:", err));
+    }
+
+    function setupCamera() {
+        Html5Qrcode.getCameras().then(devices => {
+            if (devices.length > 0) {
+                let backCamera = devices.find(device => device.label.toLowerCase().includes("back"));
+                currentCameraId = backCamera ? backCamera.id : devices[0].id;
+                startScanner(currentCameraId);
+
+                if (devices.length > 1) {
+                    let switchButton = document.getElementById("switch-camera-btn");
+                    switchButton.style.display = "block";
+                    switchButton.dataset.cameras = JSON.stringify(devices.map(d => d.id));
+                }
+            }
+        }).catch(err => console.error("No se pudo acceder a las cámaras:", err));
+    }
+
+    function switchCamera() {
+        let devices = JSON.parse(document.getElementById("switch-camera-btn").dataset.cameras);
+        let currentIndex = devices.indexOf(currentCameraId);
+        let nextIndex = (currentIndex + 1) % devices.length;
+        currentCameraId = devices[nextIndex];
+        startScanner(currentCameraId);
+    }
+
     function onScanSuccess(qrCodeMessage) {
         let scannedDataDiv = document.getElementById("scanned-data");
-        scannedDataDiv.textContent = `Datos escaneados: ${qrCodeMessage}`;  // Mostrar datos escaneados en pantalla
-    
-        // Dividir los datos del QR en líneas
+        scannedDataDiv.textContent = "Datos escaneados: " + qrCodeMessage;
+        
         let lines = qrCodeMessage.split("\n");
-
-        // Buscar la línea que contiene el ID
         let idLine = lines.find(line => line.startsWith("ID:"));
-
-        // Si se encuentra, extraer el ID correctamente
+        
         if (idLine) {
             let clienteID = idLine.replace("ID:", "").trim();
+            console.log("ID extraído del QR:", clienteID);
 
             fetch("{% url 'registrar_asistencia_qr' %}", {
                 method: "POST",
@@ -47,36 +95,44 @@
             .then(response => response.json())
             .then(data => {
                 let resultDiv = document.getElementById("result");
+                resultDiv.innerHTML = "";
+                
                 if (data.success) {
-                    resultDiv.innerHTML = `<div class="alert alert-success">${data.success}</div>`;
+                    resultDiv.innerHTML += `<div class="alert alert-success">${data.success}</div>`;
                 } else {
-                    resultDiv.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+                    resultDiv.innerHTML += `<div class="alert alert-danger">${data.error}</div>`;
                 }
+                
+                if (data.cliente) {
+                    resultDiv.innerHTML += `<div class="alert alert-info"><strong>Cliente:</strong> ${data.cliente.nombre} ${data.cliente.apellido}</div>`;
+                }
+                
+                if (data.pagos) {
+                    let fechaFin = new Date(data.pagos.fecha_fin);
+                    let fechaHoy = new Date();
+                    fechaHoy.setHours(0, 0, 0, 0);
+                    
+                    if (fechaFin < fechaHoy) {
+                        resultDiv.innerHTML += `<div class="alert alert-danger"><strong>⚠️ Estado:</strong> El cliente debe la cuota de este mes.</div>`;
+                    }
+                } else {
+                    resultDiv.innerHTML += `<div class="alert alert-warning">⚠️ No se encontraron pagos registrados. <strong>Debe la cuota de este mes.</strong></div>`;
+                }
+                
+                setTimeout(() => {
+                    window.location.href = `/estado_cuota/${clienteID}/`;
+                }, 2000);
             })
             .catch(error => {
-                console.error("Error:", error);
+                console.error("Error en la solicitud:", error);
             });
         } else {
-            console.error("Formato de ID inválido");
-            scannedDataDiv.textContent = "Error: Formato de ID inválido";
+            console.error("⚠️ No se encontró un ID en el código QR");
+            scannedDataDiv.innerHTML += "<br><span style='color:red;'>⚠️ Formato de ID inválido</span>";
         }
     }
 
-    // Configuración del escáner de QR
-    function startScanner() {
-        let html5QrCode = new Html5QrcodeScanner(
-            "qr-reader",
-            {
-                fps: 10,  // Velocidad de escaneo (frames por segundo)
-                qrbox: { width: 250, height: 250 },  // Tamaño del área de escaneo
-            }
-        );
-
-        html5QrCode.render(onScanSuccess);
-    }
-
-    // Iniciar el escáner cuando la página cargue
-    window.onload = startScanner;
+    window.onload = setupCamera;
 </script>
-
 {% endblock %}
+

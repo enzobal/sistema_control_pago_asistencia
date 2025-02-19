@@ -6,29 +6,26 @@
 <div class="container mt-5">
     <h2 class="text-center mb-4">Lista de Clientes</h2>
 
+    <!-- Buscador en vivo -->
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <form method="GET" class="form-inline">
-            <input type="text" name="buscar" class="form-control mr-2" placeholder="Buscar por nombre o apellido" value="{{ request.GET.buscar }}">
-            <button type="submit" class="btn btn-primary">Buscar</button>
-        </form>
-        {% comment %} <a href="{% url 'crear_cliente' %}" class="btn btn-success">AGREGAR UN NUEVO CLIENTE(opcion sin usuario y contraseña, solo el admin podra controlar)</a> {% endcomment %}
+        <input type="text" id="buscador" class="form-control mr-2" placeholder="Buscar por nombre o apellido" onkeyup="filtrarClientes()">
     </div>
 
     <div class="table-responsive">
-        <table class="table table-striped table-bordered">
+        <table class="table table-striped table-bordered" id="tablaClientes">
             <thead class="thead-dark">
                 <tr>
                     <th>Imagen</th>
                     <th>Nombre</th>
                     <th>Apellido</th>
+                    <th>Estado de Membresía</th>
+                    <th>Asistencia Mensual</th>
+                    <th>Editar Perfil</th>
                     <th>Número de Celular</th>
                     <th>Edad</th>
                     <th>Fecha de Nacimiento</th>
                     <th>Enfermedades</th>
                     <th>Alergias</th>
-                    <th>Asistencia Mensual</th>
-                    <th>Estado de Membresía</th>
-                    <th>editar perfil</th>
                 </tr>
             </thead>
             <tbody>
@@ -43,25 +40,30 @@
                         </td>
                         <td>{{ cliente.nombre }}</td>
                         <td>{{ cliente.apellido }}</td>
+                        
+                        <td>
+                            <a href="{% url 'vencimientos_pagos' %}" class="badge text-decoration-none {% if cliente.membresia_vencida %}badge-danger{% else %}badge-success{% endif %}">
+                                {% if cliente.membresia_vencida %}
+                                    VENCIDA (ver)
+                                {% else %}
+                                    ACTIVA (ver)
+                                {% endif %}
+                            </a>
+                        </td>
+                        
+                        
+                        <td>{{ cliente.asistencia_mensual }}</td>
+                        
+                        <td>
+                            <a href="{% url 'editar_cliente' cliente.id %}" class="btn btn-sm btn-warning">Editar</a>
+                            <a href="{% url 'eliminar_cliente' cliente.id %}" class="btn btn-sm btn-danger" onclick="return confirm('¿Seguro que deseas eliminar este cliente?')">Eliminar</a>
+                        </td>
+
                         <td>{{ cliente.numero_celular }}</td>
                         <td>{{ cliente.edad }}</td>
                         <td>{{ cliente.fecha_nacimiento|date:"d/m/Y" }}</td>
                         <td>{{ cliente.enfermedades|default:"Ninguna" }}</td>
                         <td>{{ cliente.alergias|default:"Ninguna" }}</td>
-                        <td>{{ cliente.asistencia_mensual }}</td>
-                        
-                        <td>
-                            {% if cliente.membresia_vencida %}
-                                <span class="badge badge-danger">Vencida</span>
-                            {% else %}
-                                <span class="badge badge-success">Activa</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <a href="{% url 'editar_cliente' cliente.id %}" class="btn btn-sm btn-warning">Editar</a>
-                            <a href="{% url 'eliminar_cliente' cliente.id %}" class="btn btn-sm btn-danger" onclick="return confirm('¿Seguro que deseas eliminar este cliente?')">Eliminar</a>
-                        </td>
-                        
                     </tr>
                 {% endfor %}
             </tbody>
@@ -69,6 +71,32 @@
     </div>
 </div>
 
+<!-- Script de búsqueda en vivo -->
+<script>
+    function filtrarClientes() {
+        let input = document.getElementById("buscador").value.toLowerCase();
+        let tabla = document.getElementById("tablaClientes");
+        let filas = tabla.getElementsByTagName("tr");
 
+        // Iterar a través de todas las filas y ocultar aquellas que no coincidan con el filtro
+        for (let i = 1; i < filas.length; i++) {  // Comienza desde 1 para evitar el encabezado
+            let fila = filas[i];
+            let celdas = fila.getElementsByTagName("td");
+            let textoFila = '';
+
+            // Concatenar todos los textos de las celdas que quieres filtrar
+            for (let j = 0; j < celdas.length; j++) {
+                textoFila += celdas[j].innerText.toLowerCase();
+            }
+
+            // Si la fila contiene el texto del filtro, se muestra, de lo contrario se oculta
+            if (textoFila.includes(input)) {
+                fila.style.display = "";
+            } else {
+                fila.style.display = "none";
+            }
+        }
+    }
+</script>
 
 {% endblock %}

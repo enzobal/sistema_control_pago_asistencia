@@ -5,7 +5,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.decorators import user_passes_test
-from .forms import ClienteForm
+
 from django.shortcuts import render, redirect, get_object_or_404
 
 
@@ -34,7 +34,7 @@ def registro_usuario(request):
 # perfildel usuario
 
 
-from django.shortcuts import redirect
+
 
 
 
@@ -44,7 +44,7 @@ def perfil(request):
         cliente = Cliente.objects.get(user=request.user)
     except Cliente.DoesNotExist:
         return redirect('completar_perfil')  # Redirigir a una vista para completar el perfil
-    
+
     return render(request, 'clientes/perfil.html', {'cliente': cliente})
 
 
@@ -57,7 +57,7 @@ from .forms import ClienteForm
 @login_required
 def editar_perfil(request, cliente_id=None):
     """
-    Permite editar el perfil del cliente. 
+    Permite editar el perfil del cliente.
     - Los usuarios solo pueden editar su propio perfil.
     - Los administradores pueden editar el perfil de cualquier cliente.
     """
@@ -131,7 +131,7 @@ def completar_perfil(request):
             return redirect('perfil')
     else:
         form = ClienteForm()
-    
+
     return render(request, 'clientes/completar_perfil.html', {'form': form})
 
 
@@ -147,12 +147,7 @@ def home(request):
 
     return render(request, "clientes/home.html", {"cliente": cliente})
 
-# def home(request):
-#     cliente = None
-#     if hasattr(request.user, 'cliente'): 
-#         cliente = request.user.cliente
 
-#     return render(request, "home.html", {"cliente": cliente})
 
 
 
@@ -195,7 +190,7 @@ def listar_inactivos(request):
     )
 
     clientes_sin_asistencia = clientes_con_ultima_asistencia.filter(
-        Q(ultima_asistencia__isnull=True) | 
+        Q(ultima_asistencia__isnull=True) |
         Q(ultima_asistencia__lt=hace_un_mes)
     )
 
@@ -376,7 +371,7 @@ def listar_pagos(request):
     if request.user.is_staff:  # Administradores ven todos los pagos
         if query:
             pagos = Pago.objects.filter(
-                Q(fecha_pago__icontains=query) | 
+                Q(fecha_pago__icontains=query) |
                 Q(cliente__nombre__icontains=query) |
                 Q(cliente__apellido__icontains=query) |
                 Q(importe__icontains=query)
@@ -386,7 +381,7 @@ def listar_pagos(request):
     else:  # Usuarios normales ven solo sus pagos
         if query:
             pagos = Pago.objects.filter(
-                Q(fecha_pago__icontains=query) | 
+                Q(fecha_pago__icontains=query) |
                 Q(importe__icontains=query),
                 cliente__user=request.user  # Relación entre Cliente y User
             ).order_by('-fecha_pago')
@@ -603,35 +598,38 @@ def generar_qr(request, cliente_id):
 
     return render(request, 'qr_cliente.html', {'cliente': cliente, 'qr_code_url': qr_code_url})
 
+
 # ✅ Vista para escanear QR
 def escanear_qr(request):
     return render(request, "escanear_qr.html")
 
 
+
+
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 import json
 from django.utils.timezone import now
-from .models import Cliente, Asistencia
+from datetime import timedelta
+from .models import Cliente, Asistencia, Pago
 
 @csrf_exempt
-
 def registrar_asistencia_qr(request):
     try:
-        # Cargar los datos JSON del cuerpo de la solicitud
         data = json.loads(request.body)
         cliente_id = data.get("cliente_id")
 
         if not cliente_id:
             return JsonResponse({"error": "No se recibió un ID de cliente válido"}, status=400)
 
-        # Extraer solo el número si cliente_id es una URL
         if "http" in cliente_id:
             cliente_id = cliente_id.rstrip("/").split("/")[-1]
 
-        cliente_id = int(cliente_id)  # Convertir a entero
+        cliente_id = int(cliente_id)
         cliente = Cliente.objects.get(id=cliente_id)
+
+        # Verificar si la membresía está vencida
+        membresia_vencida = cliente.membresia_vencida()
 
         # Registrar asistencia
         asistencia, created = Asistencia.objects.get_or_create(
@@ -644,7 +642,30 @@ def registrar_asistencia_qr(request):
             asistencia.presente = True
             asistencia.save()
 
-        return JsonResponse({"success": f"Asistencia registrada para {cliente.nombre}"})
+        # Determinar inactividad del usuario
+        hoy = now().date()
+        hace_dos_meses = hoy - timedelta(days=60)
+        hace_un_mes = hoy - timedelta(days=30)
+
+        ultima_asistencia = Asistencia.objects.filter(cliente=cliente).order_by('-fecha').first()
+        ultimo_pago = Pago.objects.filter(cliente=cliente).order_by('-fecha_pago').first()
+
+        motivo_inactividad = ""
+
+        if not ultimo_pago or (ultimo_pago.fecha_pago < hace_dos_meses):
+            motivo_inactividad = "No ha pagado la cuota en más de 60 días"
+
+        if not ultima_asistencia or (ultima_asistencia.fecha < hace_un_mes):
+            if motivo_inactividad:
+                motivo_inactividad += " y no ha asistido en más de 30 días"
+            else:
+                motivo_inactividad = "No ha asistido en más de 30 días"
+
+        return JsonResponse({
+            "success": f"Asistencia registrada para {cliente.nombre}",
+            "membresia_vencida": membresia_vencida,
+            "motivo_inactividad": motivo_inactividad if motivo_inactividad else None
+        })
 
     except Cliente.DoesNotExist:
         return JsonResponse({"error": "Cliente no encontrado"}, status=404)
@@ -652,8 +673,20 @@ def registrar_asistencia_qr(request):
         return JsonResponse({"error": "Formato de ID inválido"}, status=400)
     except json.JSONDecodeError:
         return JsonResponse({"error": "Error en el formato de datos"}, status=400)
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # para datos estadisticos
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -697,6 +730,67 @@ def eliminar_asistencia(request, asistencia_id):
     asistencia.delete()
     return redirect('listar_asistencias')  # Redirige a la lista de asistencias
 
+
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+
+from django.shortcuts import render, get_object_or_404
+from .models import Cliente, Pago
+from datetime import date
+from django.utils import timezone
+from datetime import timedelta
+
+def estado_cuota(request, cliente_id):
+    try:
+        # Recuperamos el cliente y los pagos asociados
+        cliente = Cliente.objects.get(id=cliente_id)
+        pagos = Pago.objects.filter(cliente=cliente).order_by('-fecha_pago')
+
+        # Si existen pagos, calculamos la diferencia de días
+        if pagos.exists():
+            fecha_fin_pago = pagos[0].fecha_fin
+            today_date = timezone.now().date()
+
+            # Calculamos los días transcurridos desde la fecha de fin
+            dias_transcurridos = (today_date - fecha_fin_pago).days
+        else:
+            dias_transcurridos = None
+
+        return render(request, 'clientes/estado_cuota.html', {
+            'cliente': cliente,
+            'pagos': pagos,
+            'dias_transcurridos': dias_transcurridos,
+            'today_date': timezone.now().date(),  # Pasamos la fecha actual al template
+        })
+
+    except Cliente.DoesNotExist:
+        return render(request, 'clientes/cliente_no_encontrado.html')
+
+
+
+# renderiza, los clientes al dia, vencidos y por vencer
+from django.shortcuts import render
+from datetime import date, timedelta
+from .models import Pago
+
+def vencimientos_pagos(request):
+    hoy = date.today()
+    proximos_7_dias = hoy + timedelta(days=7)
+    
+    pagos_vencidos = Pago.objects.filter(fecha_fin__lt=hoy)
+    pagos_por_vencer = Pago.objects.filter(fecha_fin__gte=hoy, fecha_fin__lte=proximos_7_dias)
+    pagos_al_dia = Pago.objects.filter(fecha_fin__gt=proximos_7_dias)
+
+    context = {
+        'pagos_vencidos': pagos_vencidos,
+        'pagos_por_vencer': pagos_por_vencer,
+        'pagos_al_dia': pagos_al_dia,
+    }
+    return render(request, 'clientes/vencimientos.html', context)
+
+
+# superadmin sebas, pirueee@gmail.com,sebas2025
 
 
 # superadmin sebas, pirueee@gmail.com,sebas2025

@@ -9,20 +9,20 @@
         <div class="col-md-4">
             <div class="card bg-primary text-white shadow p-3">
                 <h5>Total de Clientes</h5>
-                <h2>{{ total_clientes }}</h2>
+                <h2>{{ total_clientes|default:"0" }}</h2>
             </div>
         </div>
         <div class="col-md-4">
             <div class="card bg-success text-white shadow p-3">
                 <h5>Presentes Hoy</h5>
-                <h2>{{ presentes_hoy }}</h2>
-                <p>{{ porcentaje_presentes }}% de asistencia</p>
+                <h2>{{ presentes_hoy|default:"0" }}</h2>
+                <p>{{ porcentaje_presentes|default:"0" }}% de asistencia</p>
             </div>
         </div>
         <div class="col-md-4">
             <div class="card bg-warning text-dark shadow p-3">
                 <h5>Total Recaudado</h5>
-                <h2>${{ total_recaudado }}</h2>
+                <h2>${{ total_recaudado|default:"0" }}</h2>
             </div>
         </div>
     </div>
@@ -46,13 +46,18 @@
     var ctx1 = document.getElementById('graficoAsistencia').getContext('2d');
     var ctx2 = document.getElementById('graficoRecaudacion').getContext('2d');
 
+    // Variables en JavaScript corregidas
+    var presentesHoy = parseInt("{{ presentes_hoy|default:'0' }}", 10);
+var ausentesHoy = parseInt("{{ ausentes_hoy|default:'0' }}", 10);
+var totalRecaudado = parseFloat("{{ total_recaudado|default:'0' }}");
+
     // Gráfico de asistencia
     new Chart(ctx1, {
         type: 'doughnut',
         data: {
             labels: ['Presentes', 'Ausentes'],
             datasets: [{
-                data: [{{ presentes_hoy }}, {{ ausentes_hoy }}],
+                data: [presentesHoy, ausentesHoy],
                 backgroundColor: ['#28a745', '#dc3545'],
             }]
         },
@@ -68,7 +73,7 @@
         data: {
             labels: ['Total Recaudado'],
             datasets: [{
-                data: [{{ total_recaudado }}],
+                data: [totalRecaudado],
                 backgroundColor: ['#007bff'],
             }]
         },
@@ -78,7 +83,7 @@
             scales: {
                 y: {
                     beginAtZero: true,
-                    max: Math.max(1000, {{ total_recaudado }} * 1.2) // Límite del eje y ajustado
+                    max: Math.max(1000, totalRecaudado * 1.2) // Ajuste de escala seguro
                 }
             }
         }
