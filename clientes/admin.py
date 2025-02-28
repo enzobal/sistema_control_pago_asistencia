@@ -101,3 +101,18 @@ class PagoAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
         
 
+from django.contrib import admin
+from .models import Grupo, Subgrupo, Rutina
+
+@admin.register(Grupo)
+class GrupoAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'get_clientes')  # Muestra los clientes en la tabla de admin
+    filter_horizontal = ('clientes',)  # Facilita la selección de clientes en el admin
+
+@admin.register(Subgrupo)
+class SubgrupoAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'grupo')
+
+@admin.register(Rutina)
+class RutinaAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'grupo', 'subgrupo')

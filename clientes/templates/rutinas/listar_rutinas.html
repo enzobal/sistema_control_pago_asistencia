@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h2>Administración de Grupos, Subgrupos y Rutinas</h2>
+
+        {% for grupo in grupos %}
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0 d-flex justify-content-between align-items-center">
+                        <span>{{ grupo.nombre }}</span>
+                        <button class="btn btn-light btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#grupo_{{ grupo.id }}" aria-expanded="false">
+                            <i class="bi bi-chevron-down"></i>
+                        </button>
+                    </h3>
+                </div>
+                <div id="grupo_{{ grupo.id }}" class="collapse">
+                    <div class="card-body">
+                        <form action="{% url 'eliminar_grupo' grupo.id %}" method="POST" onsubmit="return confirm('¿Eliminar este grupo y sus subgrupos y rutinas?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-sm mb-2">Eliminar Grupo</button>
+                        </form>
+
+                        {% for subgrupo in grupo.subgrupos.all %}
+                            <div class="card mb-3">
+                                <div class="card-header bg-secondary text-white">
+                                    <h4 class="mb-0 d-flex justify-content-between align-items-center">
+                                        <span>{{ subgrupo.nombre }}</span>
+                                        <button class="btn btn-light btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#subgrupo_{{ subgrupo.id }}">
+                                            <i class="bi bi-chevron-down"></i>
+                                        </button>
+                                    </h4>
+                                </div>
+                                <div id="subgrupo_{{ subgrupo.id }}" class="collapse">
+                                    <div class="card-body">
+                                        <form action="{% url 'eliminar_subgrupo' subgrupo.id %}" method="POST" onsubmit="return confirm('¿Eliminar este subgrupo y todas sus rutinas?');">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-danger btn-sm mb-2">Eliminar Subgrupo</button>
+                                        </form>
+
+                                        <div class="table-responsive">
+                                            <table class="table table-striped">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Nombre</th>
+                                                        <th>Descripción</th>
+                                                        <th>Imagen</th>
+                                                        <th>Video</th>
+                                                        <th>Clientes Asignados</th>
+                                                        <th>Acciones</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for rutina in subgrupo.rutina_set.all %}
+                                                        <tr>
+                                                            <td>{{ rutina.nombre }}</td>
+                                                            <td>{{ rutina.descripcion }}</td>
+                                                            <td>
+                                                                {% if rutina.imagen %}
+                                                                    <img src="{{ rutina.imagen.url }}" alt="Imagen de rutina" width="100">
+                                                                {% else %}
+                                                                    No hay imagen
+                                                                {% endif %}
+                                                            </td>
+                                                            <td>
+                                                                {% if rutina.video_url %}
+                                                                    {% if 'youtube.com' in rutina.video_url or 'youtu.be' in rutina.video_url %}
+                                                                        {% with rutina.video_url|slice:"-11:" as video_id %}
+                                                                            <iframe width="150" height="100" src="https://www.youtube.com/embed/{{ video_id }}" allowfullscreen></iframe>
+                                                                        {% endwith %}
+                                                                    {% else %}
+                                                                        <video controls width="150">
+                                                                            <source src="{{ rutina.video_url }}" type="video/mp4">
+                                                                            Tu navegador no soporta el video.
+                                                                        </video>
+                                                                    {% endif %}
+                                                                {% else %}
+                                                                    No hay video
+                                                                {% endif %}
+                                                            </td>
+                                                            <td>
+                                                                {% if rutina.clientes.all %}
+                                                                    <ul>
+                                                                        {% for cliente in rutina.clientes.all %}
+                                                                            <li>{{ cliente.username }}
+                                                                                <form action="{% url 'eliminar_cliente_de_rutina' rutina.id cliente.id %}" method="POST" style="display:inline;">
+                                                                                    {% csrf_token %}
+                                                                                    <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                                                                                </form>
+                                                                            </li>
+                                                                        {% endfor %}
+                                                                    </ul>
+                                                                {% else %}
+                                                                    Sin clientes asignados.
+                                                                {% endif %}
+                                                            </td>
+                                                            <td>
+                                                                <a href="{% url 'editar_rutina' rutina.id %}" class="btn btn-secondary btn-sm">Editar</a>
+
+                                                                <form action="{% url 'asignar_cliente_a_rutina' rutina.id %}" method="POST" style="display:inline;">
+                                                                    {% csrf_token %}
+                                                                    <select name="cliente_id" class="form-select form-select-sm">
+                                                                        {% for cliente in clientes %}
+                                                                            <option value="{{ cliente.id }}">{{ cliente.user.username }}</option>
+                                                                        {% empty %}
+                                                                            <option disabled>No hay clientes</option>
+                                                                        {% endfor %}
+                                                                    </select>
+                                                                    <button type="submit" class="btn btn-primary btn-sm">Asignar</button>
+                                                                </form>
+
+                                                                <form action="{% url 'eliminar_todos_clientes_de_rutina' rutina.id %}" method="POST" style="display:inline;">
+                                                                    {% csrf_token %}
+                                                                    <button type="submit" class="btn btn-danger btn-sm">Eliminar Todos</button>
+                                                                </form>
+                                                            </td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

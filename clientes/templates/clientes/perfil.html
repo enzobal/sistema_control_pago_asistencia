@@ -1,8 +1,92 @@
 {% extends "base.html" %}
 
-{% block title %}Mi Perfil - FullGym{% endblock %}
+{% block title %}Mi Perfil - NEMESIS{% endblock %}
 
 {% block content %}
+<style>
+    /* Imagen de fondo */
+    body {
+        background: url("/static/images/nemesis7.jpg") no-repeat center center fixed;
+        background-size: cover;
+        font-family: Arial, sans-serif;
+        color: #ffffff;
+    }
+
+    /* Contenedor principal */
+    .perfil-container {
+        max-width: 600px;
+        margin: 50px auto;
+        padding: 30px;
+        background: rgba(0, 0, 51, 0.8);
+        border-radius: 15px;
+        text-align: center;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+        border: 2px solid #0056b3;
+        animation: fadeIn 0.5s ease-in-out;
+    }
+
+    /* Título */
+    .perfil-container h2 {
+        font-size: 32px;
+        font-weight: bold;
+        text-shadow: 3px 3px 8px rgba(0, 0, 0, 1), 0 0 10px #0056b3;
+        color: #007bff;
+        padding: 10px;
+        display: inline-block;
+        border-radius: 10px;
+        background: rgba(0, 0, 102, 0.6);
+    }
+
+    /* Imagen de perfil */
+    .imagen-perfil img {
+        max-width: 150px;
+        border-radius: 50%;
+        border: 3px solid #007bff;
+    }
+
+    /* Información del perfil */
+    .info-perfil p {
+        font-size: 18px;
+        margin: 5px 0;
+        color: #ffffff;
+    }
+
+    /* Botón de editar */
+    .boton-editar {
+        margin-top: 20px;
+    }
+
+    .boton-editar a {
+        background: #007bff;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-size: 18px;
+        font-weight: bold;
+        transition: 0.3s ease-in-out;
+        display: inline-block;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .boton-editar a:hover {
+        background: #0056b3;
+        transform: scale(1.1);
+    }
+
+    /* Animación de entrada */
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
 <div class="perfil-container">
     <h2>Mi Perfil</h2>
     
@@ -30,78 +114,4 @@
     </div>
 </div>
 
-<style>
-/* Imagen de fondo */
-body {
-    background: url("/static/images/foto3.jpg") no-repeat center center fixed;
-    background-size: cover;
-    font-family: "Arial", sans-serif;
-    color: white;
-}
-
-/* Contenedor principal */
-.perfil-container {
-    max-width: 500px;
-    margin: 50px auto;
-    padding: 30px;
-    background: rgba(0, 0, 0, 0.7);
-    border-radius: 10px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
-    text-align: center;
-    animation: fadeIn 0.5s ease-in-out;
-}
-
-/* Título */
-.perfil-container h2 {
-    color: #ffcc00; /* Amarillo */
-    font-size: 24px;
-    margin-bottom: 20px;
-}
-
-/* Imagen de perfil */
-.imagen-perfil img {
-    max-width: 150px;
-    border-radius: 50%;
-    border: 3px solid #ff9900; /* Naranja */
-}
-
-/* Información del perfil */
-.info-perfil p {
-    color: white;
-    font-size: 16px;
-    margin: 5px 0;
-}
-
-/* Botón de editar */
-.boton-editar {
-    margin-top: 20px;
-}
-
-.boton-editar a {
-    background: #ff9900; /* Naranja */
-    color: white;
-    padding: 12px 20px;
-    border-radius: 5px;
-    text-decoration: none;
-    font-size: 16px;
-    transition: 0.3s ease-in-out;
-}
-
-.boton-editar a:hover {
-    background: #cc7700; /* Naranja oscuro */
-    transform: scale(1.05);
-}
-
-/* Animación de entrada */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-</style>
 {% endblock %}

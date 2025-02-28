@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Listado de Comprobantes</h2>
+
+<table border="1">
+    <thead>
+        <tr>
+            <th>Cliente</th>
+            <th>nombre</th>
+            <th>apellido</th>
+            <th>Archivo</th>
+            <th>Fecha</th>
+            {% if user.is_staff %}
+
+                <th>Acciones</th>
+            {% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for comprobante in comprobantes %}
+        <tr>
+            <td>{{ comprobante.cliente.username }}</td>
+            <td>{{ comprobante.cliente.cliente.nombre }}</td>
+            <td>{{ comprobante.cliente.cliente.apellido }}</td>
+
+            <td><a href="{{ comprobante.archivo.url }}" target="_blank">Ver Comprobante</a></td>
+            <td>{{ comprobante.fecha_subida }}</td>
+            <td>
+                {% if user.is_staff %}
+                <form action="{% url 'eliminar_comprobante' comprobante.id %}" method="POST">
+                    {% csrf_token %}
+                    <button type="submit" onclick="return confirm('¿Seguro que deseas eliminar este comprobante?');">
+                        Eliminar
+                    </button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

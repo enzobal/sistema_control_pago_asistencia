@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Bienvenido a FullGym - Iniciar Sesión{% endblock %}
+{% block title %}Bienvenido a NEMESIS - Iniciar Sesión{% endblock %}
 
 {% block content %}
 <style>
     body {
-        background: url('/static/images/hero2-bg.png') no-repeat center center fixed;
+        background: url('/static/images/nemesis5.jpg') no-repeat center center fixed;
         background-size: cont;
         color: #fff;
         font-family: Arial, sans-serif;
@@ -40,14 +40,14 @@
     }
     .btn-primary {
         background-color: #ffcc00;
-        border-color: #ffcc00;
+        border-color: #5900ff;
         border-radius: 5px;
         width: 100%;
         color: #000;
         font-weight: bold;
     }
     .btn-primary:hover {
-        background-color: #ffaa00;
+        background-color: #0026ff;
         border-color: #ffaa00;
     }
     .link {
@@ -66,9 +66,9 @@
 <div class="overlay"></div>
 
 <div class="login-container">
-    <img src="/static/images/hero-bg.jpg" alt="Logo">
-    <h2>Bienvenido a FullGym</h2>
-    <p class="welcome-text">Tu camino hacia una vida más activa comienza aquí. Ingresa para acceder a tu cuenta y seguir alcanzando tus metas.</p>
+    <img src="/static/images/nemesis6.jpg" alt="Logo">
+    <h2>Bienvenido a NEMESIS</h2>
+    <p class="welcome-text">"En cada repetición, una victoria. En cada paso, un avance. ¡Únete y marca la diferencia!"</p>
     <form method="POST">
         {% csrf_token %}
         <div class="form-group">

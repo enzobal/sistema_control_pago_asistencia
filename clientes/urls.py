@@ -3,6 +3,7 @@ from django.urls import path
 from . import views
 from django.contrib.auth import views as auth_views
 from .views import vencimientos_pagos
+from .views import pago_cuota_enlinea, eliminar_comprobante, eliminar_comprobante, listar_comprobantes
 
 urlpatterns = [
     path('index', views.index, name='index'),
@@ -29,7 +30,7 @@ urlpatterns = [
     path('pagos/', views.listar_pagos, name='listar_pagos'),
     path('pagos/nuevo/', views.crear_pago, name='crear_pago'),
     path('eliminar_pago/<int:id>/', views.eliminar_pago, name='eliminar_pago'),
-    # path('pagos/editar/<int:id>/', views.editar_pago, name='editar_pago'),
+
     path('recaudacion/', views.recaudacion_view, name='recaudacion'),
     path('editar_pago/<int:id>/', views.editar_pago, name='editar_pago'),
     path('eliminar_nota/<int:nota_id>/', views.eliminar_nota, name='eliminar_nota'),
@@ -41,4 +42,22 @@ urlpatterns = [
     path('generar_qr/<int:cliente_id>/', views.generar_qr, name='generar_qr'),
     path('estado_cuota/<int:cliente_id>/', views.estado_cuota, name='estado_cuota'),
     path('vencimientos/', vencimientos_pagos, name='vencimientos_pagos'),
+    
+    path('listar_rutinas/', views.listar_rutinas, name='listar_rutinas'),
+    
+    path('pago_en_linea/', pago_cuota_enlinea, name='pago_cuota_enlinea'),
+    
+    path('eliminar_comprobante/<int:comprobante_id>/', eliminar_comprobante, name='eliminar_comprobante'),
+    path('listar_comprobantes/', listar_comprobantes, name='listar_comprobantes'),
+    path('listar-rutinas/', views.listar_rutinas, name='listar_rutinas'),
+    path("mi-rutina/", views.mi_rutina, name="mi_rutina"),
+    
+    path('editar-rutina/<int:rutina_id>/', views.editar_rutina, name='editar_rutina'),
+    path('crear_rutina/', views.crear_rutina, name='crear_rutina'),
+    path("asignar_cliente_a_rutina/<int:rutina_id>/", views.asignar_cliente_a_rutina, name="asignar_cliente_a_rutina"),
+    path('eliminar-todos-clientes-de-rutina/<int:rutina_id>/', views.eliminar_todos_clientes_de_rutina, name='eliminar_todos_clientes_de_rutina'),
+    path('eliminar_cliente_de_rutina/<int:rutina_id>/<int:cliente_id>/', views.eliminar_cliente_de_rutina, name='eliminar_cliente_de_rutina'),
+    path('eliminar_grupo/<int:grupo_id>/', views.eliminar_grupo, name='eliminar_grupo'),
+    path('eliminar_subgrupo/<int:subgrupo_id>/', views.eliminar_subgrupo, name='eliminar_subgrupo'),
+
 ]

@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="comprobantes-container">
+    <style>
+
+body {
+    background: url("/static/images/nemesis3.jpg") no-repeat center center fixed;
+    background-size: cover;
+    font-family: "Arial", sans-serif;
+    color: #f0f0f0;
+}
+
+        .comprobantes-container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        .comprobantes-column {
+            width: 48%;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .comprobantes-container h2, 
+        .comprobantes-container h3 {
+            color: #333;
+            text-align: center;
+        }
+
+        .comprobantes-container p {
+            font-size: 16px;
+            margin: 10px 0;
+        }
+
+        .comprobantes-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .comprobantes-button:hover {
+            background-color: #0056b3;
+        }
+
+        .comprobantes-container img {
+            width: 100%;
+            max-width: 250px;
+            margin: 10px auto;
+            display: block;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .comprobantes-container form {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .comprobantes-container input,
+        .comprobantes-container button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        .comprobantes-container ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .comprobantes-container li {
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .comprobantes-link {
+            text-decoration: none;
+            color: #007bff;
+            font-weight: bold;
+        }
+
+        .comprobantes-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+
+    <!-- Columna izquierda: Datos bancarios -->
+    <div class="comprobantes-column">
+        <h2>Transferir tu pago a:</h2>
+        
+        <p><strong>CBU:</strong> {{ datos_bancarios.cbu }} 
+            <button class="comprobantes-button" onclick="copiarTexto('{{ datos_bancarios.cbu }}')">Copiar</button>
+        </p>
+        <p><strong>CVU:</strong> {{ datos_bancarios.cvu }} 
+            <button class="comprobantes-button" onclick="copiarTexto('{{ datos_bancarios.cvu }}')">Copiar</button>
+        </p>
+        
+        <h3>QR para pago</h3>
+        <img src="{{ datos_bancarios.qr }}" alt="Código QR">
+        
+        <h3>Subir Comprobante de Pago</h3>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="comprobantes-button">Subir Comprobante</button>
+        </form>
+    </div>
+
+    <!-- Columna derecha: Comprobantes del cliente -->
+    <div class="comprobantes-column">
+        <h2>Mis Comprobantes Subidos</h2>
+
+
+        {% if comprobantes %}
+            <ul>
+                {% for comprobante in comprobantes %}
+                    <li>
+                        <a href="{{ comprobante.archivo.url }}" target="_blank" class="comprobantes-link">
+                            Ver Comprobante - {{ comprobante.fecha_subida|date:"d/m/Y" }} - {{ comprobante.fecha_subida|time:"H:i" }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No has subido comprobantes aún.</p>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    function copiarTexto(texto) {
+        navigator.clipboard.writeText(texto);
+        alert("Copiado al portapapeles: " + texto);
+    }
+</script>
+
+{% endblock %}

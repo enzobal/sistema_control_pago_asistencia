@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Editar Rutina: {{ rutina.nombre }}</h2>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <!-- Vista previa de la imagen si ya existe -->
+    {% if rutina.imagen %}
+        <p><strong>Imagen actual:</strong></p>
+        <img src="{{ rutina.imagen.url }}" alt="Imagen de rutina" width="150">
+    {% endif %}
+
+    <!-- Vista previa del video si ya existe -->
+    {% if rutina.video_url %}
+        <p><strong>Video actual:</strong></p>
+        {% if 'youtube.com' in rutina.video_url or 'youtu.be' in rutina.video_url %}
+            {% with rutina.video_url|slice:"-11:" as video_id %}
+                <iframe 
+                    width="300" height="180"
+                    src="https://www.youtube.com/embed/{{ video_id }}?rel=0" 
+                    allowfullscreen>
+                </iframe>
+            {% endwith %}
+        {% else %}
+            <video controls width="300">
+                <source src="{{ rutina.video_url }}" type="video/mp4">
+                Tu navegador no soporta el video.
+            </video>
+        {% endif %}
+    {% endif %}
+
+    <button type="submit">Guardar Cambios</button>
+</form>
+
+<a href="{% url 'listar_rutinas' %}">Volver al listado</a>
+{% endblock %}

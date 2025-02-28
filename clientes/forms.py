@@ -63,3 +63,59 @@ class PagoForm(forms.ModelForm):
         if fecha_pago < fecha_inicio:
             raise ValidationError('La fecha de pago no puede ser anterior a la fecha de inicio.')
         return fecha_pago
+
+
+from django import forms
+from .models import Rutina, Grupo, Subgrupo
+
+class GrupoForm(forms.ModelForm):
+    class Meta:
+        model = Grupo
+        fields = ['nombre']
+
+class SubgrupoForm(forms.ModelForm):
+    class Meta:
+        model = Subgrupo
+        fields = ['nombre', 'grupo']
+
+class RutinaForm(forms.ModelForm):
+    class Meta:
+        model = Rutina
+        fields = ['nombre', 'descripcion', 'imagen', 'grupo', 'subgrupo', 'video_url']
+        widgets = {
+            'descripcion': forms.Textarea(attrs={'cols': 40, 'rows': 5}),
+        }
+
+    grupo_nuevo = forms.CharField(max_length=100, required=False, label="Nuevo Grupo")
+    subgrupo_nuevo = forms.CharField(max_length=100, required=False, label="Nuevo Subgrupo")
+
+    def save(self, commit=True):
+        grupo = self.cleaned_data.get('grupo')
+        subgrupo = self.cleaned_data.get('subgrupo')
+        grupo_nuevo = self.cleaned_data.get('grupo_nuevo')
+        subgrupo_nuevo = self.cleaned_data.get('subgrupo_nuevo')
+
+        if grupo_nuevo:
+            grupo, created = Grupo.objects.get_or_create(nombre=grupo_nuevo)
+        if subgrupo_nuevo:
+            subgrupo, created = Subgrupo.objects.get_or_create(nombre=subgrupo_nuevo, grupo=grupo)
+
+        rutina = super().save(commit=False)
+        rutina.grupo = grupo
+        rutina.subgrupo = subgrupo
+
+        if commit:
+            rutina.save()
+        return rutina
+
+
+
+# formulario para subir comprobantez
+
+from django import forms
+from .models import ComprobantePago
+
+class ComprobantePagoForm(forms.ModelForm):
+    class Meta:
+        model = ComprobantePago
+        fields = ['archivo']

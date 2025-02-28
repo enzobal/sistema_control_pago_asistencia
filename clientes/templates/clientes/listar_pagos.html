@@ -4,12 +4,51 @@
 {% block title %}Lista de Pagos{% endblock %}
 
 {% block content %}
+<style>
+    body {
+        background-color: #e49c9c;
+        color: white;
+        background: url("/static/images/nemesis3.jpg") no-repeat center center fixed;
+        background-size: cover;
+        font-family: Arial, sans-serif;
+        color: #ffffff;
+    }
+    .card {
+        background-color: #db2525;
+        border: 1px solid #db9b9b;
+    }
+    .card-header, .thead-dark {
+        background-color: #120ef5 !important;
+        color: white !important;
+    }
+    .table td, .table th, .list-group-item {
+        color: white !important;
+        border-color: #742c2c;
+    }
+    .form-control, textarea {
+        color: rgb(223, 108, 108) !important;
+        background-color: white !important;
+        border: 1px solid #666666;
+    }
+    .btn-warning {
+        background-color: #f39c12;
+        border-color: #e67e22;
+    }
+    .btn-danger {
+        background-color: #c0392b;
+        border-color: #a93226;
+    }
+    .btn-success {
+        background-color: #27ae60;
+        border-color: #229954;
+    }
+</style>
+
 <div class="container mt-4">
     <div class="text-center">
         <h2>Lista de Pagos</h2>
     </div>
 
-    <!-- Buscador en vivo -->
     <div class="d-flex justify-content-between align-items-center mb-3">
         <input type="text" id="buscador" class="form-control mr-2" placeholder="Buscar por nombre, apellido o fecha" onkeyup="filtrarPagos()">
     </div>
@@ -18,8 +57,8 @@
 
     {% for mes_pagos in pagos_por_mes %}
     <div class="card mb-4">
-        <div class="card-header bg-dark text-white">
-            <h5 class="mb-0">{{ mes_pagos.grouper }}</h5> <!-- Nombre del mes y año -->
+        <div class="card-header">
+            <h5 class="mb-0">{{ mes_pagos.grouper }}</h5>
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -33,7 +72,7 @@
                             <th>Fecha de Inicio</th>
                             <th>Fecha de Fin</th>
                             {% if user.is_staff %} 
-                                <th>Acciones</th>  <!-- Nueva columna para agrupar botones -->
+                                <th>Acciones</th>
                             {% endif %}
                         </tr>
                     </thead>
@@ -102,30 +141,22 @@
     {% endif %}
 </div>
 
-<!-- Script de búsqueda en vivo -->
 <script>
 function filtrarPagos() {
     let input = document.getElementById("buscador").value.toLowerCase();
     let tabla = document.getElementById("tablaPagos");
     let filas = tabla.getElementsByTagName("tr");
 
-    // Iterar a través de todas las filas y ocultar aquellas que no coincidan con el filtro
-    for (let i = 1; i < filas.length; i++) {  // Comienza desde 1 para evitar el encabezado
+    for (let i = 1; i < filas.length; i++) {
         let fila = filas[i];
         let celdas = fila.getElementsByTagName("td");
         let textoFila = '';
 
-        // Concatenar todos los textos de las celdas que quieres filtrar
         for (let j = 0; j < celdas.length; j++) {
             textoFila += celdas[j].innerText.toLowerCase();
         }
 
-        // Si la fila contiene el texto del filtro, se muestra, de lo contrario se oculta
-        if (textoFila.includes(input)) {
-            fila.style.display = "";
-        } else {
-            fila.style.display = "none";
-        }
+        fila.style.display = textoFila.includes(input) ? "" : "none";
     }
 }
 </script>

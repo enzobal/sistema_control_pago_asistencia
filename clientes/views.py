@@ -30,6 +30,41 @@ def registro_usuario(request):
         form = RegistroUsuarioForm()
     return render(request, 'clientes/registro_usuario.html', {'form': form})
 
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.utils.timezone import now
+from .models import Cliente, Pago  # Importa ambos modelos
+
+@login_required
+def home(request):
+    ultimo_pago = None
+    estado_pago = "Desconocido"
+    cliente = None  # Inicializamos la variable cliente
+
+    try:
+        # Obtener el Cliente asociado al usuario autenticado
+        cliente = get_object_or_404(Cliente, user=request.user)
+        
+        # Buscar el último pago del cliente
+        ultimo_pago = Pago.objects.filter(cliente=cliente).order_by('-fecha_pago').first()
+
+        # Verificar si el pago está al día
+        if ultimo_pago:
+            if ultimo_pago.fecha_fin and ultimo_pago.fecha_fin >= now().date():
+                estado_pago = "Al día ✅"
+            else:
+                estado_pago = "Vencido ❌"
+
+    except Cliente.DoesNotExist:
+        estado_pago = "No registrado como cliente ❌"
+
+    return render(request, 'clientes/home.html', {
+        'cliente': cliente,  # 🔥 Agregado al contexto para que se use en el template
+        'ultimo_pago': ultimo_pago,
+        'estado_pago': estado_pago
+    })
+
+
 
 # perfildel usuario
 
@@ -135,17 +170,6 @@ def completar_perfil(request):
     return render(request, 'clientes/completar_perfil.html', {'form': form})
 
 
-from django.shortcuts import render, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from .models import Cliente  # Asegúrate de importar tu modelo Cliente
-
-@login_required
-def home(request):
-    cliente = None
-    if hasattr(request.user, 'cliente'):  # Verifica si el usuario tiene un cliente asociado
-        cliente = request.user.cliente
-
-    return render(request, "clientes/home.html", {"cliente": cliente})
 
 
 
@@ -269,6 +293,15 @@ def eliminar_cliente(request, cliente_id):
     return render(request, 'clientes/eliminar_cliente.html', {'cliente': cliente})
 
 
+
+# /////////////////////////
+# /////////////////////////
+#  ASISTENCIA
+# ////////////////////////
+# //////////////////////
+
+
+
 from django.db.models import Count
 from datetime import date
 from django.shortcuts import render, redirect
@@ -352,9 +385,67 @@ def crear_asistencia(request):
         form = AsistenciaForm(user=request.user)
     return render(request, 'clientes/crear_asistencia.html', {'form': form})
 
+def is_admin(user):
+    return user.is_staff
+
+@login_required
+def editar_asistencia(request, id):
+    asistencia = Asistencia.objects.get(id=id)
+    if request.user.is_staff or asistencia.cliente.user == request.user:
+        form = AsistenciaForm(request.POST or None, instance=asistencia, user=request.user)
+        if request.method == 'POST' and form.is_valid():
+            form.save()
+            return redirect('listar_asistencias')
+    else:
+        return redirect('error_page')  # Redirigir o mostrar un mensaje si el usuario no está autorizado
+    return render(request, 'clientes/editar_asistencia.html', {'form': form})
+
+@receiver(post_save, sender=Asistencia)
+def actualizar_asistencia_mensual(sender, instance, **kwargs):
+    mes_actual = instance.fecha.month
+    anio_actual = instance.fecha.year
+
+    # Contar las asistencias del cliente en el mes actual
+    total_asistencias = Asistencia.objects.filter(
+        cliente=instance.cliente,
+        presente=True,
+        fecha__year=anio_actual,
+        fecha__month=mes_actual
+    ).count()
+
+    # Actualizar todas las instancias del mes actual con el nuevo total
+    Asistencia.objects.filter(
+        cliente=instance.cliente,
+        fecha__year=anio_actual,
+        fecha__month=mes_actual
+    ).update(asistencia_mensual=total_asistencias)
+
+from django.shortcuts import get_object_or_404
+from django.contrib.auth.decorators import user_passes_test
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)  # Solo administradores pueden eliminar
+def eliminar_asistencia(request, asistencia_id):
+    asistencia = get_object_or_404(Asistencia, id=asistencia_id)
+    asistencia.delete()
+    return redirect('listar_asistencias')  # Redirige a la lista de asistencias
 
 
 
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+
+from django.shortcuts import render, get_object_or_404
+from .models import Cliente, Pago
+from datetime import date
+from django.utils import timezone
+from datetime import timedelta
+
+# //////////////////////////////////////////////
+# /////////////////////////////////////////////
+#///////////////////////////////////         PAGOS       / /////////////////////////////////
+# ///////////////////////////////////////////
+# /////////////////////////////////////////////
 
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
@@ -431,20 +522,6 @@ def crear_pago(request):
 
 from django.contrib.auth.decorators import login_required, user_passes_test
 
-def is_admin(user):
-    return user.is_staff
-
-@login_required
-def editar_asistencia(request, id):
-    asistencia = Asistencia.objects.get(id=id)
-    if request.user.is_staff or asistencia.cliente.user == request.user:
-        form = AsistenciaForm(request.POST or None, instance=asistencia, user=request.user)
-        if request.method == 'POST' and form.is_valid():
-            form.save()
-            return redirect('listar_asistencias')
-    else:
-        return redirect('error_page')  # Redirigir o mostrar un mensaje si el usuario no está autorizado
-    return render(request, 'clientes/editar_asistencia.html', {'form': form})
 
 
 
@@ -469,27 +546,11 @@ def editar_pago(request, id):
 
 
 
-@receiver(post_save, sender=Asistencia)
-def actualizar_asistencia_mensual(sender, instance, **kwargs):
-    mes_actual = instance.fecha.month
-    anio_actual = instance.fecha.year
 
-    # Contar las asistencias del cliente en el mes actual
-    total_asistencias = Asistencia.objects.filter(
-        cliente=instance.cliente,
-        presente=True,
-        fecha__year=anio_actual,
-        fecha__month=mes_actual
-    ).count()
 
-    # Actualizar todas las instancias del mes actual con el nuevo total
-    Asistencia.objects.filter(
-        cliente=instance.cliente,
-        fecha__year=anio_actual,
-        fecha__month=mes_actual
-    ).update(asistencia_mensual=total_asistencias)
-
+# ////////////////////////////////
 # vista para calculo de recaudacion anual y mensual
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 from django.shortcuts import render
 from django.db.models import Sum
 from .models import Pago
@@ -561,6 +622,17 @@ def eliminar_nota(request, nota_id):
         except Nota.DoesNotExist:
             return JsonResponse({'success': False})
     return JsonResponse({'success': False})
+
+
+
+# ///////////////////////////////////////////////////////7
+# ////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////REFERIDO A  QR //////////////////
+# ////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////
+
+
+
 
 import qrcode
 from io import BytesIO
@@ -677,12 +749,11 @@ def registrar_asistencia_qr(request):
 
 
 
-
-
-
-
-
-
+# ///////////////////////////////////////////////////////7
+# ////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////CUOTA //////////////////
+# ////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////
 
 
 
@@ -720,26 +791,9 @@ def dashboard(request):
     return render(request, "dashboard.html", context)
 
 
-from django.shortcuts import get_object_or_404
-from django.contrib.auth.decorators import user_passes_test
-
-@login_required
-@user_passes_test(lambda u: u.is_staff)  # Solo administradores pueden eliminar
-def eliminar_asistencia(request, asistencia_id):
-    asistencia = get_object_or_404(Asistencia, id=asistencia_id)
-    asistencia.delete()
-    return redirect('listar_asistencias')  # Redirige a la lista de asistencias
 
 
 
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-
-from django.shortcuts import render, get_object_or_404
-from .models import Cliente, Pago
-from datetime import date
-from django.utils import timezone
-from datetime import timedelta
 
 def estado_cuota(request, cliente_id):
     try:
@@ -788,6 +842,263 @@ def vencimientos_pagos(request):
         'pagos_al_dia': pagos_al_dia,
     }
     return render(request, 'clientes/vencimientos.html', context)
+
+
+# pagos en line y comprvantes desde aquiiiiiiiiiiiiiiiiiii
+
+from django.shortcuts import render, redirect
+from .models import ComprobantePago, Cliente
+from .forms import ComprobantePagoForm
+
+def pago_cuota_enlinea(request):
+    datos_bancarios = {
+        "cbu": "1234567890123456789012",
+        "cvu": "0000003100001234567891",
+        "qr": "/media/qr_gym.png"
+    }
+
+    comprobantes = ComprobantePago.objects.filter(cliente=request.user).order_by('-fecha_subida')
+
+    # Buscar el cliente asociado al usuario
+    cliente = Cliente.objects.filter(user=request.user).first()
+
+    if request.method == "POST":
+        form = ComprobantePagoForm(request.POST, request.FILES)
+        if form.is_valid():
+            comprobante = form.save(commit=False)
+            comprobante.cliente = request.user  
+            comprobante.save()
+            return redirect('pago_cuota_enlinea')  
+
+    else:
+        form = ComprobantePagoForm()
+
+    return render(request, "pago_cuota_enlinea.html", {
+        "datos_bancarios": datos_bancarios,
+        "form": form,
+        "comprobantes": comprobantes,
+        "cliente": cliente  # Enviamos el cliente al template
+    })
+
+
+
+# para que el admin borre los comrpobantes de pagos
+
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import user_passes_test
+from django.contrib import messages
+import os
+from django.conf import settings
+from .models import ComprobantePago
+
+def es_admin(user):
+    return user.is_superuser  # Solo los admins pueden borrar
+
+@user_passes_test(es_admin)
+def eliminar_comprobante(request, comprobante_id):
+    comprobante = get_object_or_404(ComprobantePago, id=comprobante_id)
+
+    # Elimina el archivo físico del servidor
+    ruta_archivo = os.path.join(settings.MEDIA_ROOT, str(comprobante.archivo))
+    if os.path.exists(ruta_archivo):
+        os.remove(ruta_archivo)
+
+    # Elimina el registro de la base de datos
+    comprobante.delete()
+    
+    messages.success(request, "Comprobante eliminado correctamente.")
+    return redirect('listar_comprobantes')  # Ajusta según tu URL de listado
+
+# para listalos comprobantes de pagos de los clientes
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def listar_comprobantes(request):
+    comprobantes = ComprobantePago.objects.all().order_by('cliente__last_name', 'cliente__first_name')
+    return render(request, 'clientes/listar_comprobantes.html', {'comprobantes': comprobantes})
+
+
+
+
+# ///////////////////////////////////////////////////////7
+# ////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////RUTINAS//////////////////
+# ////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////
+
+
+
+from django.shortcuts import render, redirect
+from .models import Rutina, Cliente
+from .forms import RutinaForm
+
+def crear_rutina(request):
+    if request.method == "POST":
+        form = RutinaForm(request.POST, request.FILES)
+        if form.is_valid():
+            rutina = form.save(commit=False)  # Guardamos la rutina, pero sin confirmarla en la BD
+            rutina.save()  # Ahora la guardamos en la base de datos
+
+            # Obtener los IDs de los clientes seleccionados en el formulario
+            cliente_ids = request.POST.getlist("cliente_ids")
+
+            # Asignar los clientes a la rutina
+            clientes = User.objects.filter(cliente__id__in=cliente_ids)  # Buscar el User asociado al Cliente
+            rutina.clientes.add(*clientes)  # Ahora asignamos correctamente los usuarios
+
+            return redirect("listar_rutinas")  # Redirigir al listado de rutinas después de guardar
+    else:
+        form = RutinaForm()
+
+    # Pasamos los clientes disponibles al template
+    clientes = Cliente.objects.all()
+    
+    return render(request, "rutinas/crear_rutina.html", {"form_rutina": form, "clientes": clientes})
+
+
+
+
+from django.shortcuts import render
+from .models import Grupo, Cliente
+
+@login_required
+def listar_rutinas(request):
+    grupos = Grupo.objects.prefetch_related("subgrupos__rutina_set").all()
+    clientes = Cliente.objects.all()  # Obtener todos los clientes
+    rutinas = Rutina.objects.all()
+
+    return render(request, "rutinas/listar_rutinas.html", {"grupos": grupos, "clientes": clientes})
+
+
+
+
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+from .models import Rutina  # Asegúrate de importar el modelo Rutina
+
+@login_required
+def mi_rutina(request):
+    usuario = request.user
+    rutinas = Rutina.objects.filter(clientes=usuario).order_by('-fecha_creacion')  # Lo más reciente primero
+
+    return render(request, "rutinas/mi_rutina.html", {"rutinas": rutinas})
+
+
+
+
+
+from django.contrib.auth.models import User
+from .models import Rutina
+from .forms import RutinaForm
+
+def editar_rutina(request, rutina_id):
+    rutina = get_object_or_404(Rutina, id=rutina_id)
+
+    if request.method == "POST":
+        form = RutinaForm(request.POST, request.FILES, instance=rutina)
+        if form.is_valid():
+            form.save()
+            return redirect("listar_rutinas")
+    else:
+        form = RutinaForm(instance=rutina)
+
+    return render(request, "rutinas/editar_rutina.html", {"form": form, "rutina": rutina})
+
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .models import Rutina, Cliente
+
+
+def asignar_cliente_a_rutina(request, rutina_id):
+    if request.method == "POST":
+        rutina = get_object_or_404(Rutina, id=rutina_id)
+        cliente_id = request.POST.get("cliente_id")
+        cliente = get_object_or_404(Cliente, id=cliente_id)
+        
+        rutina.clientes.add(cliente.user)
+        messages.success(request, f"Cliente {cliente.nombre} asignado a la rutina {rutina.nombre}.")
+        
+    return redirect("listar_rutinas")
+
+
+
+
+
+# elimina todos los clientes
+
+from django.shortcuts import get_object_or_404, redirect
+from .models import Rutina
+
+def eliminar_todos_clientes_de_rutina(request, rutina_id):
+    # Obtener la rutina
+    rutina = get_object_or_404(Rutina, id=rutina_id)
+    
+    # Eliminar todos los clientes asignados
+    rutina.clientes.clear()
+    
+    # Redirigir a la página de listar rutinas
+    return redirect('listar_rutinas')
+
+
+
+from django.shortcuts import get_object_or_404, redirect
+from .models import Rutina, Cliente
+
+def eliminar_cliente_de_rutina(request, rutina_id, cliente_id):
+    # Obtén la rutina y el cliente correspondiente
+    rutina = get_object_or_404(Rutina, id=rutina_id)
+    cliente = get_object_or_404(Cliente, id=cliente_id)
+
+    # Obtén el usuario asociado al cliente
+    user = cliente.user  # Este es el objeto User relacionado con Cliente
+
+    # Elimina el usuario de la rutina
+    rutina.clientes.remove(user)
+    return redirect('listar_rutinas')  # Cambia 'nombre_de_la_vista' por la vista correcta
+
+
+# elimina grupos de rutina
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
+from .models import Grupo, Subgrupo
+
+@login_required
+def eliminar_grupo(request, grupo_id):
+    grupo = get_object_or_404(Grupo, id=grupo_id)
+    
+    # Eliminar todas las relaciones de subgrupos y rutinas
+    grupo.subgrupos.all().delete()  # Eliminar subgrupos
+    grupo.rutina_set.all().delete()  # Eliminar rutinas asociadas
+
+    # Finalmente eliminar el grupo
+    grupo.delete()
+    return redirect('listar_rutinas')  # Redirigir a la página de listado
+
+# elimina subgrupo de rutinas
+@login_required
+def eliminar_subgrupo(request, subgrupo_id):
+    subgrupo = get_object_or_404(Subgrupo, id=subgrupo_id)
+    
+    # Eliminar todas las rutinas asociadas al subgrupo
+    subgrupo.rutina_set.all().delete()
+
+    # Eliminar el subgrupo
+    subgrupo.delete()
+    return redirect('listar_rutinas')  # Redirigir a la página de listado
+
+
+
+
+
+
+
+
+
+
+
 
 
 # superadmin sebas, pirueee@gmail.com,sebas2025

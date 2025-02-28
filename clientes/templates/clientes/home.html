@@ -1,38 +1,14 @@
 {% extends "base.html" %}
+{% load static %}
 
-<title>FullGym</title>
+<title>NEMESIS</title>
 
 {% block content %}
-<!-- Imagen de fondo -->
 <style>
     body {
-        background: url("/static/images/hero-bg.jpg") no-repeat center center fixed;
+        background: url("/static/images/nemesis3.jpg") no-repeat center center fixed;
         background-size: cover;
         font-family: Arial, sans-serif;
-        color: #ffffff;
-    }
-
-    h1 {
-        font-size: 40px;
-        font-weight: bold;
-        text-shadow: 3px 3px 8px rgba(0, 0, 0, 1), 0 0 10pxrgb(177, 152, 52);
-        color: #ffcc00;
-        border: 3px solid rgba(136, 117, 39, 0.8);
-        padding: 10px;
-        display: inline-block;
-        border-radius: 10px;
-        background: rgba(46, 41, 41, 0.6);
-    }
-
-    h2 {
-        font-size: 32px;
-        text-shadow: 2px 2px 6px rgba(0, 0, 0, 1);
-        color: #00ffcc;
-    }
-
-    p {
-        font-size: 20px;
-        text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8);
         color: #ffffff;
     }
 
@@ -44,7 +20,31 @@
         text-align: center;
         box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
         max-width: 800px;
-        border: 2px solid #ffcc00;
+        border: 2px solid #ff0000;
+        position: relative;
+    }
+
+    h1 {
+        font-size: 40px;
+        font-weight: bold;
+        text-shadow: 3px 3px 8px rgba(0, 0, 0, 1), 0 0 10px #ff0000;
+        color: #ff0000;
+        padding: 10px;
+        display: inline-block;
+        border-radius: 10px;
+        background: rgba(46, 41, 41, 0.6);
+    }
+
+    h2 {
+        font-size: 32px;
+        text-shadow: 2px 2px 6px rgba(0, 0, 0, 1);
+        color: #ff4500;
+    }
+
+    p {
+        font-size: 20px;
+        text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8);
+        color: #ffffff;
     }
 
     .btn-main {
@@ -52,7 +52,7 @@
         text-decoration: none;
         padding: 15px 30px;
         color: #ffffff;
-        background: #007bff;
+        background: #ff4500;
         border-radius: 10px;
         font-size: 20px;
         font-weight: bold;
@@ -62,42 +62,59 @@
     }
 
     .btn-main:hover {
-        background: #0056b3;
+        background: #cc3700;
         transform: scale(1.1);
+    }
+
+    .aranceles {
+        margin-top: 15px;
+        padding: 15px;
+        background: rgba(255, 0, 0, 0.2);
+        border: 2px solid #ff0000;
+        border-radius: 8px;
+        font-size: 18px;
+        font-weight: bold;
+        text-align: left;
+    }
+
+    .aranceles p {
+        margin: 5px 0;
+        color: #ff0000;
     }
 </style>
 
 <div class="welcome-container">
-    <br><br><br><br>
     <h1>Bienvenido al Gimnasio {{ user.username }}</h1>
-    <h2>#FullGym </h2>
+    <h2>#NEMESIS</h2>
 
     {% if user.is_authenticated %}
-        <p>¡Es genial que seas parte de nosotros, {{ user.username }}!
+        <p>¡Es genial que seas parte de nosotros, {{ user.username }}!  
         POR FAVOR RECORDÁ EDITAR TU PERFIL</p>
-        <br><br><br>
+
+        {% if ultimo_pago %}
+            <div class="aranceles">
+                <p>📅 Última fecha de pago: <strong>{{ ultimo_pago.fecha_pago|date:"d M Y" }}</strong></p>
+                <p>📅 Fecha de vencimiento: <strong>{{ ultimo_pago.fecha_fin|date:"d M Y" }}</strong></p>
+                <p>💳 Estado: <strong>{{ estado_pago }}</strong></p>
+            </div>
+        {% else %}
+            <p>No tienes pagos registrados.</p>
+        {% endif %}
+        
+        <!-- Sección de Aranceles -->
+        <div class="aranceles">
+            <p>🔹 <strong>Aranceles</strong></p>
+            <p>💰 Del 1 al 10, importe: <strong>$25.000</strong></p>
+            <p>⚠️ Pasado el 10, importe: <strong>$30.000</strong></p>
+                <!-- Botón para abonar la cuota mensual -->
+            <td>
+                <a href="{% url 'pago_cuota_enlinea' %}" class="btn-main">Para abonar tu cuota mensual, haz clic aquí</a>
+            </td>
+        </div>
+
         {% if user.is_staff %}
             <a href="{% url 'index' %}" class="btn-main">Ir a la Portada</a>
         {% endif %}
-        {% comment %} <nav>
-            <ul>
-                {% if user.is_staff %}
-                    <li><a href="{% url 'home' %}">Inicio</a></li>
-                    <li><a href="{% url 'listar_clientes' %}">Clientes</a></li>
-                    <li><a href="{% url 'listar_asistencias' %}">Asistencias</a></li>
-                    <li><a href="{% url 'listar_pagos' %}">Pagos</a></li>
-                    <li><a href="{% url 'crear_cliente' %}">Crear Cliente</a></li>
-                    <li><a href="{% url 'crear_asistencia' %}">Crear Asistencia</a></li>
-                    <li><a href="{% url 'crear_pago' %}">Crear Pago</a></li>
-                {% else %}
-                    <li><a href="{% url 'home' %}">Inicio</a></li>
-                    <li><a href="{% url 'listar_asistencias' %}">Mis Asistencias</a></li>
-                    <li><a href="{% url 'listar_pagos' %}">Mis Pagos</a></li>
-                    <li><a href="{% url 'perfil' %}">Mi Perfil</a></li>
-                    <li><a href="{% url 'editar_perfil' %}">Editar Perfil</a></li>
-                {% endif %}
-            </ul>
-        </nav> {% endcomment %}
     {% else %}
         <p>
             <a href="{% url 'login' %}" class="btn-main">Iniciar Sesión</a>
@@ -105,5 +122,5 @@
         </p>
     {% endif %}
 </div>
-{% endblock %}
 
+{% endblock %}

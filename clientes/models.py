@@ -34,6 +34,10 @@ class Cliente(models.Model):
 
         super().save(*args, **kwargs)
 
+    def get_user(self):
+        return self.user if self.user else None
+
+
     def membresia_vencida(self):
         """
         Retorna True si no hay pagos activos o la membresía está vencida, False si está activa.
@@ -116,3 +120,61 @@ class Nota(models.Model):
 
     def __str__(self):
         return f"Nota creada el {self.fecha_creacion}"
+
+
+
+
+from django.db import models
+from django.contrib.auth.models import User
+
+class Grupo(models.Model):
+    nombre = models.CharField(max_length=100, unique=True)
+    clientes = models.ManyToManyField(User, blank=True, related_name="grupos")
+
+    def __str__(self):
+        return self.nombre
+
+    def get_clientes(self):
+        return ", ".join([cliente.username for cliente in self.clientes.all()])
+
+
+class Subgrupo(models.Model):
+    nombre = models.CharField(max_length=100)
+    grupo = models.ForeignKey(Grupo, on_delete=models.CASCADE, related_name="subgrupos")
+
+    def __str__(self):
+        return f"{self.grupo.nombre} - {self.nombre}"
+
+
+        
+from django.utils.timezone import now
+class Rutina(models.Model):
+    nombre = models.CharField(max_length=200)
+    descripcion = models.TextField()
+    imagen = models.ImageField(upload_to="rutinas/", blank=True, null=True)
+    grupo = models.ForeignKey(Grupo, on_delete=models.SET_NULL, null=True, blank=True)
+    subgrupo = models.ForeignKey(Subgrupo, on_delete=models.SET_NULL, null=True, blank=True)
+    clientes = models.ManyToManyField(User, blank=True)
+    video_url = models.URLField(max_length=500, blank=True, null=True)  # Nuevo campo para el video
+    fecha_creacion = models.DateTimeField(default=now)  # Guarda la fecha de publicación
+
+
+    def __str__(self):
+        return f"{self.nombre} - {self.subgrupo.nombre}"
+
+
+
+
+
+
+# para el pago en linea,: exibe cbu y  guarda comprobante
+from django.db import models
+from django.contrib.auth.models import User
+
+class ComprobantePago(models.Model):
+    cliente = models.ForeignKey(User, on_delete=models.CASCADE)
+    archivo = models.FileField(upload_to='comprobantes/')
+    fecha_subida = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Comprobante de {self.cliente.username} - {self.fecha_subida.strftime('%Y-%m-%d')}"
